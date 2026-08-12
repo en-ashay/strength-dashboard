@@ -1,5 +1,15 @@
 :root { --acid: #d9ff59; --muted: #92928d; --panel: #161616; --line: #292929; }
 button { border: 0; cursor: pointer; background: none; }
+.access-page { min-height: 100vh; display: grid; place-items: center; padding: 20px; background: radial-gradient(circle at 50% 0, #293219, #0d0d0d 42%); }
+.access-card { width: min(100%, 470px); background: rgba(20,20,20,.94); border: 1px solid #343a28; border-radius: 16px; padding: clamp(28px, 6vw, 52px); box-shadow: 0 30px 90px #000; }
+.access-mark { width: 54px; height: 54px; display: grid; place-items: center; margin-bottom: 32px; color: #111; background: var(--acid); font-weight: 800; transform: skew(-7deg); }
+.access-card h1 { font-size: clamp(40px, 8vw, 62px); }
+.access-card > p { color: #92928d; margin-bottom: 28px; }
+.access-card form { display: grid; gap: 12px; }
+.access-card input { width: 100%; font-size: 18px; letter-spacing: .08em; }
+.access-card .primary { margin-top: 4px; }
+.access-card > small { display: block; color: #5f5f5b; margin-top: 18px; font-size: 10px; }
+.access-error { color: #ff8b6a; font-size: 12px; }
 .app-shell { min-height: 100vh; display: grid; grid-template-columns: 240px 1fr; background: radial-gradient(circle at 80% -10%, #242b16 0, #0d0d0d 30%); }
 .sidebar { position: sticky; top: 0; height: 100vh; border-right: 1px solid var(--line); padding: 28px 20px; display: flex; flex-direction: column; background: rgba(13,13,13,.92); z-index: 5; }
 .brand { display: flex; align-items: center; gap: 12px; text-align: left; }

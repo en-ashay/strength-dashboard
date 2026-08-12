@@ -127,7 +127,33 @@ function csvCell(value: string | number) {
   return `"${String(value).replaceAll('"', '""')}"`
 }
 
+const accessHash = 'f582abb8d9ee072b8f4c7aa0d61603e3caaf264e36bddff63db2d34f21c5f8a9'
+
+async function sha256(value: string) {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+function AccessGate({ unlock }: { unlock: () => void }) {
+  const [phrase, setPhrase] = useState('')
+  const [error, setError] = useState('')
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault()
+    if (await sha256(phrase) === accessHash) {
+      sessionStorage.setItem('strength-dashboard-access', 'granted')
+      unlock()
+      return
+    }
+    setError('Incorrect access phrase.')
+    setPhrase('')
+  }
+
+  return <main className="access-page"><section className="access-card"><div className="access-mark">AS</div><div className="eyebrow">PRIVATE TRAINING DASHBOARD</div><h1>Access required.</h1><p>Enter the shared access phrase to open Ashay Strength.</p><form onSubmit={submit}><label>Access phrase<input autoFocus type="password" value={phrase} onChange={(event) => { setPhrase(event.target.value); setError('') }} autoComplete="current-password" /></label>{error && <span className="access-error">{error}</span>}<button className="primary" type="submit">Open dashboard</button></form><small>Access lasts until this browser tab or session is closed.</small></section></main>
+}
+
 function App() {
+  const [hasAccess, setHasAccess] = useState(() => sessionStorage.getItem('strength-dashboard-access') === 'granted')
   const [tab, setTab] = useState<Tab>('today')
   const [profile, setProfile] = useState<Profile>(() => loadLocal('ash-active-profile', 'ashay'))
   const [schedule, setSchedule] = useState(() => loadLocal(`ash-schedule-${loadLocal<Profile>('ash-active-profile', 'ashay')}`, defaultSchedule))
@@ -186,6 +212,8 @@ function App() {
     setMeasurements(loadLocal(`ash-measurements-${next}`, next === 'ashay' ? [baseline] : [kalyaniBaseline]))
     setOpenExercise(null)
   }
+
+  if (!hasAccess) return <AccessGate unlock={() => setHasAccess(true)} />
 
   return (
     <div className="app-shell">
