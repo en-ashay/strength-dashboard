@@ -143,6 +143,32 @@ select:focus, input:focus { border-color: var(--acid); }
 .baseline-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: #292929; }
 .baseline-stats span { background: #171717; padding: 16px; color: #777; font-size: 10px; display: grid; }
 .baseline-stats b { color: white; font: 500 22px 'DM Mono'; }
+.goal-hero { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 25px; background: linear-gradient(120deg, #1c2114, #151515); border: 1px solid #343b25; border-radius: 14px; padding: 28px; margin-bottom: 14px; }
+.goal-hero > svg { color: var(--acid); width: 30px; }
+.goal-hero div { display: grid; }
+.goal-hero div:last-child { text-align: right; }
+.goal-hero small, .macro-grid small { color: #777; font: 10px 'DM Mono'; letter-spacing: .12em; }
+.goal-hero b { font-size: clamp(28px, 4vw, 46px); letter-spacing: -.04em; }
+.goal-hero span { color: var(--acid); font-size: 12px; }
+.macro-grid { display: grid; grid-template-columns: 1.25fr repeat(3, 1fr); gap: 10px; }
+.macro-grid article { min-height: 150px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; align-content: space-between; }
+.macro-grid .calorie-card { background: var(--acid); color: #111; }
+.macro-grid .calorie-card small { color: #465019; }
+.macro-grid b { font: 500 34px 'DM Mono'; }
+.macro-grid b i { font: 500 14px 'Manrope'; color: #777; }
+.macro-grid span { color: #777; font-size: 11px; }
+.macro-grid .calorie-card span { color: #465019; }
+.nutrition-grid { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.nutrition-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 24px; }
+.nutrition-card h2 { margin-bottom: 16px; }
+.nutrition-card ol { margin: 0; padding-left: 20px; color: #aaa; display: grid; gap: 10px; font-size: 13px; }
+.nutrition-card li::marker { color: var(--acid); font-family: 'DM Mono'; }
+.math-note { margin-top: 12px; display: flex; gap: 14px; padding: 20px; border: 1px solid #333724; background: #171914; border-radius: 10px; }
+.math-note svg { color: var(--acid); flex: 0 0 auto; }
+.math-note p, .safety-note p { margin: 5px 0 0; color: #999; font-size: 12px; }
+.safety-note { margin-top: 12px; border: 1px solid #593627; background: #211713; border-radius: 10px; padding: 20px; }
+.safety-note b { color: #ff9b7e; }
+.nutrition-disclaimer { color: #666; font-size: 10px; margin: 16px 4px 0; }
 .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
 .progress-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .progress-actions > button { border: 1px solid #343434; border-radius: 7px; padding: 11px 14px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-size: 11px; font-weight: 700; }
@@ -185,13 +211,15 @@ select:focus, input:focus { border-color: var(--acid); }
   .progress-actions { width: 100%; }
   .progress-actions > button { flex: 1; }
   .readiness { display: none; }
-  .bottom-nav { display: grid; grid-template-columns: repeat(3,1fr); position: fixed; bottom: 0; left: 0; right: 0; height: 68px; background: rgba(16,16,16,.96); backdrop-filter: blur(12px); border-top: 1px solid #292929; z-index: 20; }
+  .bottom-nav { display: grid; grid-template-columns: repeat(4,1fr); position: fixed; bottom: 0; left: 0; right: 0; height: 68px; background: rgba(16,16,16,.96); backdrop-filter: blur(12px); border-top: 1px solid #292929; z-index: 20; }
   .bottom-nav button { color: #666; font-size: 10px; display: grid; place-items: center; align-content: center; gap: 4px; }
   .bottom-nav svg { width: 19px; }
   .bottom-nav button.active { color: var(--acid); }
   .week-grid { grid-template-columns: repeat(4, 1fr); }
   .day-column { border-bottom: 1px solid var(--line); }
   .plan-grid, .chart-grid, .profile-baseline { grid-template-columns: 1fr; }
+  .nutrition-grid { grid-template-columns: 1fr; }
+  .macro-grid { grid-template-columns: 1fr 1fr; }
   .metric-grid { grid-template-columns: 1fr 1fr; }
   .measurement-form { grid-template-columns: 1fr 1fr; }
 }
@@ -213,5 +241,8 @@ select:focus, input:focus { border-color: var(--acid); }
   .plan-card label { width: 90px; }
   .metric-grid { grid-template-columns: 1fr; }
   .measurement-grid, .baseline-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .goal-hero { grid-template-columns: 1fr; gap: 10px; }
+  .goal-hero > svg { transform: rotate(90deg); }
+  .goal-hero div:last-child { text-align: left; }
   .measurement-form { grid-template-columns: 1fr; }
 }

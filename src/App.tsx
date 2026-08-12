@@ -4,7 +4,7 @@ import {
   Activity, ArrowUpRight, BarChart3, CalendarDays, Check,
   ChevronDown, CircleUserRound, Dumbbell, Flame, LogOut,
   ExternalLink, FileJson, FileSpreadsheet, Medal, Plus, Save,
-  Scale, Sparkles, TrendingUp, Users, Wind,
+  Scale, Sparkles, TrendingUp, Users, Utensils, Wind,
 } from 'lucide-react'
 import {
   Area, AreaChart, CartesianGrid, Line, LineChart,
@@ -12,7 +12,7 @@ import {
 } from 'recharts'
 import './App.css'
 
-type Tab = 'today' | 'plan' | 'progress'
+type Tab = 'today' | 'plan' | 'nutrition' | 'progress'
 type Day = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'
 type Profile = 'ashay' | 'girlfriend'
 type SetLog = { exercise: string; weight: number; reps: number; date: string }
@@ -64,37 +64,39 @@ const ashaySessions: SessionMap = {
 }
 
 const kalyaniSessions: SessionMap = {
-  lowerA: { label: 'Lower A', focus: 'Learn + build confidence', color: '#d9ff59', exercises: [
-    { name: 'Leg Press', sets: 2, reps: '10-12', rest: '2 min', why: 'Back-supported leg training with a simple movement path for a beginner.', subs: ['Machine squat', 'Box squat'] },
-    { name: 'Seated Leg Curl', sets: 2, reps: '10-15', rest: '90 sec', why: 'Stable hamstring training without loading the spine.', subs: ['Lying leg curl', 'Standing leg curl'] },
+  lowerA: { label: 'Lower A', focus: 'Same session · beginner dose', color: '#d9ff59', exercises: [
+    { name: 'Machine Squat', sets: 2, reps: '8-12', rest: '2 min', why: 'The same movement as Ashay, using a light load and comfortable depth while learning.', subs: ['Hack squat', 'Leg press'] },
+    { name: 'Romanian Deadlift', sets: 2, reps: '10-12', rest: '2 min', why: 'The same hinge as Ashay, but only if coaching and a light load allow a completely comfortable back.', subs: ['Glute bridge machine', 'Cable pull-through'] },
     { name: 'Leg Extension', sets: 2, reps: '10-15', rest: '90 sec', why: 'Simple direct quad work that is easy to learn and progress.', subs: ['Supported split squat', 'Low step-up'] },
-    { name: 'Hip Abduction Machine', sets: 2, reps: '12-15', rest: '60 sec', why: 'Direct glute-side training for hip and pelvic stability.', subs: ['Cable hip abduction', 'Lateral band walk'] },
-    { name: 'Seated Calf Raise', sets: 2, reps: '10-15', rest: '60 sec', why: 'Stable calf work with minimal whole-body fatigue.', subs: ['Leg press calf raise', 'Supported standing calf raise'] },
-    { name: 'Dead Bug', sets: 2, reps: '6-10/side', rest: '60 sec', why: 'Teaches trunk control while the floor supports the back.', subs: ['Bird dog', 'Pallof press'] },
+    { name: 'Seated Leg Curl', sets: 2, reps: '10-15', rest: '90 sec', why: 'Stable hamstring training without loading the spine.', subs: ['Lying leg curl', 'Standing leg curl'] },
+    { name: 'Standing Calf Raise', sets: 2, reps: '10-15', rest: '60 sec', why: 'The same calf pattern with support and a controlled range.', subs: ['Leg press calf raise', 'Seated calf raise'] },
+    { name: 'Hip Adduction Machine', sets: 2, reps: '12-15', rest: '60 sec', why: 'Direct inner-thigh training with back support.', subs: ['Cable hip adduction', 'Wide-stance leg press'] },
   ] },
-  upperA: { label: 'Upper A', focus: 'Supported push + pull', color: '#ff8b6a', exercises: [
-    { name: 'Machine Chest Press', sets: 2, reps: '10-12', rest: '2 min', why: 'Stable chest training with the torso supported.', subs: ['Incline machine press', 'Cable chest press'] },
+  upperA: { label: 'Upper A', focus: 'Same session · beginner dose', color: '#ff8b6a', exercises: [
+    { name: 'Incline Machine Press', sets: 2, reps: '10-12', rest: '2 min', why: 'The same stable chest exercise as Ashay with a beginner load.', subs: ['Incline DB press', 'Low-incline Smith press'] },
     { name: 'Neutral-Grip Lat Pulldown', sets: 2, reps: '10-12', rest: '2 min', why: 'Beginner-friendly vertical pulling with adjustable resistance.', subs: ['Machine pulldown', 'Assisted pull-up'] },
     { name: 'Chest-Supported Machine Row', sets: 2, reps: '10-12', rest: '2 min', why: 'Trains the upper back while reducing lower-back demand.', subs: ['Seated cable row', 'Chest-supported DB row'] },
+    { name: 'Machine Shoulder Press', sets: 2, reps: '10-12', rest: '90 sec', why: 'Back-supported shoulder training; use only a pain-free range.', subs: ['Cable shoulder press', 'High-incline machine press'] },
     { name: 'Machine Lateral Raise', sets: 2, reps: '12-15', rest: '60 sec', why: 'Stable direct shoulder work with little technique demand.', subs: ['Cable lateral raise', 'Light DB lateral raise'] },
     { name: 'Cable Triceps Pressdown', sets: 2, reps: '10-15', rest: '60 sec', why: 'Simple arm training with controlled resistance.', subs: ['Machine triceps extension', 'Single-arm pressdown'] },
-    { name: 'Machine Biceps Curl', sets: 2, reps: '10-15', rest: '60 sec', why: 'The machine support makes it easier to isolate the biceps.', subs: ['Cable curl', 'Seated DB curl'] },
+    { name: 'Machine Preacher Curl', sets: 2, reps: '10-15', rest: '60 sec', why: 'The pad supports the arm and makes the biceps movement easy to learn.', subs: ['Cable preacher curl', 'Seated DB curl'] },
   ] },
-  lowerB: { label: 'Lower B', focus: 'Glutes + stability', color: '#75d7ff', exercises: [
-    { name: 'Machine Squat', sets: 2, reps: '8-12', rest: '2 min', why: 'A supported squat pattern that can be kept shallow and light while learning.', subs: ['Leg press', 'Box squat'] },
-    { name: 'Glute Bridge Machine', sets: 2, reps: '10-15', rest: '90 sec', why: 'Direct glute work with a supported, controlled setup.', subs: ['Floor glute bridge', 'Hip thrust machine'] },
+  lowerB: { label: 'Lower B', focus: 'Same session · beginner dose', color: '#75d7ff', exercises: [
+    { name: 'Leg Press', sets: 2, reps: '10-12', rest: '2 min', why: 'The same back-supported leg movement as Ashay with beginner volume.', subs: ['Machine squat', 'Hack squat'] },
+    { name: 'Bulgarian Split Squat', sets: 2, reps: '8-10/side', rest: '2 min', why: 'Use bodyweight and hand support first to learn balance and single-leg control.', subs: ['Reverse lunge', 'Low step-up'] },
+    { name: '45 Degree Hyperextension', sets: 2, reps: '10-12', rest: '90 sec', why: 'Only use a short, controlled glute-focused range if it does not increase back pain.', subs: ['Glute bridge machine', 'Cable pull-through'] },
     { name: 'Lying Leg Curl', sets: 2, reps: '10-15', rest: '90 sec', why: 'Stable knee-flexion work for the hamstrings.', subs: ['Seated leg curl', 'Standing leg curl'] },
-    { name: 'Hip Adduction Machine', sets: 2, reps: '12-15', rest: '60 sec', why: 'Direct inner-thigh training with back support.', subs: ['Cable hip adduction', 'Wide-stance leg press'] },
-    { name: 'Standing Calf Raise', sets: 2, reps: '10-15', rest: '60 sec', why: 'Builds calf strength using a simple supported movement.', subs: ['Leg press calf raise', 'Seated calf raise'] },
-    { name: 'Bird Dog', sets: 2, reps: '6-10/side', rest: '60 sec', why: 'Builds controlled trunk and hip stability without external spinal loading.', subs: ['Dead bug', 'Pallof press'] },
+    { name: 'Seated Calf Raise', sets: 2, reps: '10-15', rest: '60 sec', why: 'The same stable calf movement as Ashay.', subs: ['Leg press calf raise', 'Supported standing calf raise'] },
+    { name: 'Cable Crunch', sets: 2, reps: '10-12', rest: '60 sec', why: 'Use a small controlled range only if comfortable; trunk stability options are available.', subs: ['Dead bug', 'Pallof press'] },
+    { name: 'Hip Abduction Machine', sets: 2, reps: '12-15', rest: '60 sec', why: 'The same direct glute-side exercise for hip stability.', subs: ['Cable hip abduction', 'Lateral band walk'] },
   ] },
-  upperB: { label: 'Upper B', focus: 'Back + shoulders', color: '#c6a5ff', exercises: [
-    { name: 'Incline Machine Press', sets: 2, reps: '10-12', rest: '2 min', why: 'A supported second chest pattern with a comfortable pressing angle.', subs: ['Machine chest press', 'Incline DB press'] },
+  upperB: { label: 'Upper B', focus: 'Same session · beginner dose', color: '#c6a5ff', exercises: [
+    { name: 'Machine Chest Press', sets: 2, reps: '10-12', rest: '2 min', why: 'The same stable chest movement as Ashay with the torso supported.', subs: ['Flat DB press', 'Cable chest press'] },
+    { name: 'One-Arm Lat Pulldown', sets: 2, reps: '10-12/side', rest: '90 sec', why: 'The same exercise with a light load and controlled path.', subs: ['Machine pulldown', 'Neutral-grip pulldown'] },
     { name: 'Machine Row', sets: 2, reps: '10-12', rest: '2 min', why: 'Stable back training without unsupported bending.', subs: ['Chest-supported row', 'Seated cable row'] },
-    { name: 'One-Arm Lat Pulldown', sets: 2, reps: '10-12/side', rest: '90 sec', why: 'Allows each side to learn a controlled pulling path.', subs: ['Machine pulldown', 'Neutral-grip pulldown'] },
     { name: 'Reverse Pec Deck', sets: 2, reps: '12-15', rest: '60 sec', why: 'Supports the torso while training rear shoulders and upper back.', subs: ['Cable rear-delt fly', 'Face pull'] },
-    { name: 'Machine Shoulder Press', sets: 2, reps: '10-12', rest: '90 sec', why: 'Back-supported shoulder training; use only a pain-free range.', subs: ['Cable shoulder press', 'High-incline machine press'] },
-    { name: 'Cable Curl + Pressdown', sets: 2, reps: '10-15 each', rest: '60 sec', why: 'A simple arm pairing to finish without loading the back.', subs: ['Machine curl + extension', 'Seated DB curl + pressdown'] },
+    { name: 'Overhead Cable Triceps Extension', sets: 2, reps: '10-15', rest: '60 sec', why: 'The same arm movement as Ashay; keep ribs down and use a light load.', subs: ['Machine overhead triceps extension', 'DB French press'] },
+    { name: 'Machine Biceps Curl', sets: 2, reps: '10-15', rest: '60 sec', why: 'The same stable biceps movement as Ashay.', subs: ['Cable curl', 'Spider curl'] },
   ] },
 }
 
@@ -192,6 +194,7 @@ function App() {
         <nav>
           <button className={tab === 'today' ? 'active' : ''} onClick={() => setTab('today')}><Dumbbell /> Today</button>
           <button className={tab === 'plan' ? 'active' : ''} onClick={() => setTab('plan')}><CalendarDays /> Plan</button>
+          <button className={tab === 'nutrition' ? 'active' : ''} onClick={() => setTab('nutrition')}><Utensils /> Nutrition</button>
           <button className={tab === 'progress' ? 'active' : ''} onClick={() => setTab('progress')}><BarChart3 /> Progress</button>
         </nav>
         <div className="profile-mini">
@@ -210,12 +213,14 @@ function App() {
         {profile === 'girlfriend' && <div className="profile-setup-note"><Sparkles/><p><b>Kalyani’s beginner plan.</b> Stable machines, lower volume and back-supported movements. Stop any exercise that worsens her back pain.</p></div>}
         {tab === 'today' && <Today profile={profile} sessions={sessions} sessionKey={activeSession} setSessionKey={setActiveSession} logs={logs} addSet={addSet} openExercise={openExercise} setOpenExercise={setOpenExercise} />}
         {tab === 'plan' && <Plan profile={profile} sessions={sessions} schedule={schedule} setSchedule={setSchedule} />}
+        {tab === 'nutrition' && <Nutrition profile={profile} measurements={measurements} />}
         {tab === 'progress' && <Progress profile={profile} totalVolume={totalVolume} logs={logs} strengthData={strengthData} bodyData={bodyData} measurements={measurements} setMeasurements={setMeasurements} user={user} />}
       </main>
 
       <nav className="bottom-nav">
         <button className={tab === 'today' ? 'active' : ''} onClick={() => setTab('today')}><Dumbbell />Today</button>
         <button className={tab === 'plan' ? 'active' : ''} onClick={() => setTab('plan')}><CalendarDays />Plan</button>
+        <button className={tab === 'nutrition' ? 'active' : ''} onClick={() => setTab('nutrition')}><Utensils />Nutrition</button>
         <button className={tab === 'progress' ? 'active' : ''} onClick={() => setTab('progress')}><BarChart3 />Progress</button>
       </nav>
     </div>
@@ -376,6 +381,34 @@ function Plan({ profile, sessions, schedule, setSchedule }: { profile: Profile; 
     </section>
     <section className={`recovery-check ${lowerGap < 2 ? 'warning' : ''}`}><Check /><div><b>{lowerGap < 2 ? 'Lower sessions are too close' : 'Recovery spacing looks workable'}</b><p>{lowerGap < 2 ? 'Separate Lower A and Lower B by at least one full day.' : profile === 'ashay' ? 'Keep the hardest lower session at least 48 hours from tennis when possible. Friday Upper B is intentionally low-fatigue after badminton.' : 'Keep at least one full day between lower sessions. As a beginner, Kalyani can start with three sessions per week and rotate the fourth into the next week if recovery is difficult.'}</p></div></section>
     {profile === 'ashay' ? <section className="profile-baseline"><div><small>PROGRAM INPUT</small><h2>Your January baseline</h2><p>The scan guides trend tracking, not exercise diagnosis. Balanced segmental lean mass does not suggest a corrective side bias.</p></div><div className="baseline-stats"><span><b>75.9</b>kg weight</span><span><b>21.1</b>% body fat</span><span><b>34.2</b>kg SMM</span><span><b>6</b>visceral level</span><span><b>174</b>cm corrected</span><span><b>30</b>years</span></div></section> : <section className="profile-baseline"><div><small>KALYANI · PROGRAM INPUT</small><h2>Beginner baseline</h2><p>Born December 1995, currently age 30. Back pain is a programming constraint, not a diagnosis; stable supported exercises are prioritized.</p></div><div className="baseline-stats"><span><b>58</b>kg weight</span><span><b>38.1</b>% body fat</span><span><b>25.5</b>BMI</span><span><b>10</b>visceral level</span><span><b>150</b>cm height</span><span><b>30</b>years</span></div></section>}
+  </div>
+}
+
+function Nutrition({ profile, measurements }: { profile: Profile; measurements: Measurement[] }) {
+  const latestWeight = measurements[measurements.length - 1]?.weight || (profile === 'ashay' ? 75.9 : 58)
+  const isAshay = profile === 'ashay'
+  const targets = isAshay
+    ? { calories: 2210, protein: 150, carbs: 245, fat: 70, targetWeight: '70-72 kg', targetFat: '15%', pace: '0.25-0.5 kg/week' }
+    : { calories: 1400, protein: 100, carbs: 145, fat: 47, targetWeight: '50 kg', targetFat: '28-30%', pace: '0.3-0.5 kg/week' }
+  const estimatedLean = isAshay ? 75.9 * (1 - .211) : 58 * (1 - .381)
+  const impliedWeight = isAshay ? estimatedLean / .85 : estimatedLean / .72
+  return <div className="page nutrition-page">
+    <div className="eyebrow">NUTRITION · {isAshay ? 'ASHAY' : 'KALYANI'} · STARTING TARGET</div>
+    <div className="page-title"><div><h1>Fuel the cut.</h1><p>Start here, then adjust from the two-week weight trend rather than one day on the scale.</p></div></div>
+    <section className="goal-hero"><div><small>CURRENT WEIGHT</small><b>{latestWeight} kg</b></div><ArrowUpRight/><div><small>GOAL BY DECEMBER</small><b>{targets.targetWeight}</b><span>{targets.targetFat} body fat</span></div></section>
+    <section className="macro-grid">
+      <article className="calorie-card"><small>DAILY CALORIES</small><b>{targets.calories}</b><span>kcal starting average</span></article>
+      <article><small>PROTEIN</small><b>{targets.protein}<i>g</i></b><span>{targets.protein * 4} kcal</span></article>
+      <article><small>CARBS</small><b>{targets.carbs}<i>g</i></b><span>{targets.carbs * 4} kcal</span></article>
+      <article><small>FAT</small><b>{targets.fat}<i>g</i></b><span>{targets.fat * 9} kcal</span></article>
+    </section>
+    <section className="nutrition-grid">
+      <article className="nutrition-card"><h2>How to use the target</h2><ol><li>Weigh in after waking and using the bathroom, 3-7 days each week.</li><li>Compare weekly averages, not individual readings.</li><li>Aim to lose about {targets.pace}; faster is not automatically better.</li><li>If the two-week average is not falling, reduce 100-150 kcal or add roughly 1,500 daily steps.</li><li>If loss is faster than the range for two weeks, energy or training suffers, add 100-150 kcal.</li></ol></article>
+      <article className="nutrition-card"><h2>Simple meal structure</h2><ol><li>Split protein across 3-4 meals.</li><li>Place a carb-rich meal 1-3 hours before lifting or sport.</li><li>Choose vegetables, fruit, legumes and whole grains for fiber.</li><li>Keep fats mostly from nuts, seeds, olive oil, dairy, eggs and fish.</li><li>Keep calories similar across the week; optionally shift 25-40 g carbs toward hard training days.</li></ol></article>
+    </section>
+    <section className="math-note"><Sparkles/><div><b>The body-fat targets are internally consistent</b><p>Using the scan estimates and assuming lean mass is retained, {isAshay ? `Ashay’s 15% projection is about ${impliedWeight.toFixed(1)} kg` : `Kalyani’s 28% projection is about ${impliedWeight.toFixed(1)} kg`}. InBody measurements fluctuate with hydration, so use waist, photos, gym performance and weight trends together.</p></div></section>
+    {!isAshay && <section className="safety-note"><b>Kalyani’s December target is aggressive but not impossible.</b><p>Do not reduce below 1,300 kcal without a registered dietitian or clinician. Her visceral-fat reading and back pain are reasons to seek routine medical guidance, especially if pain radiates, causes numbness or weakness, wakes her at night, or worsens.</p></section>}
+    <p className="nutrition-disclaimer">These are estimated starting targets, not prescriptions. Actual maintenance depends on steps, work, training and adherence. Recalculate after 2-3 weeks of consistent data.</p>
   </div>
 }
 
