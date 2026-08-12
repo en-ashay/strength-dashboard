@@ -54,7 +54,7 @@ const ashaySessions: SessionMap = {
     { name: 'Hip Abduction Machine', sets: 2, reps: '12-20', rest: '60 sec', why: 'Directly trains glute medius and minimus for hip stability during badminton and tennis.', subs: ['Cable hip abduction', 'Lateral band walk'] },
   ] },
   upperB: { label: 'Upper B', focus: 'Back + shoulders', color: '#c6a5ff', exercises: [
-    { name: 'Machine Chest Press', sets: 3, reps: '8-12', rest: '2 min', why: 'Stable chest loading that matches your preference for feeling the pecs.', subs: ['Flat DB press', 'Cable chest press'] },
+    { name: 'Pec Deck Fly', sets: 3, reps: '10-15', rest: '90 sec', why: 'You feel your pecs better here, and the fixed path lets you focus on bringing the upper arms together. Incline machine press already covers your main pressing pattern.', subs: ['Machine chest press', 'Cable fly'] },
     { name: 'One-Arm Lat Pulldown', sets: 3, reps: '8-12', rest: '2 min', why: 'Shoulder extension through a long range with side-to-side control.', subs: ['Machine pulldown', 'Chin-up'] },
     { name: 'Machine Row', sets: 3, reps: '10-15', rest: '2 min', why: 'Stable upper-back volume with minimal lower-back fatigue.', subs: ['Helms row', 'Chest-supported T-bar row'] },
     { name: 'Reverse Pec Deck', sets: 3, reps: '12-20', rest: '75 sec', why: 'Direct rear-delt work to balance pressing and swimming.', subs: ['Cable rear-delt fly', 'Face pull'] },
@@ -91,7 +91,7 @@ const kalyaniSessions: SessionMap = {
     { name: 'Hip Abduction Machine', sets: 2, reps: '12-15', rest: '60 sec', why: 'The same direct glute-side exercise for hip stability.', subs: ['Cable hip abduction', 'Lateral band walk'] },
   ] },
   upperB: { label: 'Upper B', focus: 'Same session · beginner dose', color: '#c6a5ff', exercises: [
-    { name: 'Machine Chest Press', sets: 2, reps: '10-12', rest: '2 min', why: 'The same stable chest movement as Ashay with the torso supported.', subs: ['Flat DB press', 'Cable chest press'] },
+    { name: 'Pec Deck Fly', sets: 2, reps: '10-15', rest: '90 sec', why: 'The same chest isolation as Ashay, with a light load and controlled stretch.', subs: ['Machine chest press', 'Cable fly'] },
     { name: 'One-Arm Lat Pulldown', sets: 2, reps: '10-12/side', rest: '90 sec', why: 'The same exercise with a light load and controlled path.', subs: ['Machine pulldown', 'Neutral-grip pulldown'] },
     { name: 'Machine Row', sets: 2, reps: '10-12', rest: '2 min', why: 'Stable back training without unsupported bending.', subs: ['Chest-supported row', 'Seated cable row'] },
     { name: 'Reverse Pec Deck', sets: 2, reps: '12-15', rest: '60 sec', why: 'Supports the torso while training rear shoulders and upper back.', subs: ['Cable rear-delt fly', 'Face pull'] },
@@ -260,6 +260,7 @@ function exerciseSteps(name: string): string[] {
   if (n.includes('abduction') || n.includes('band walk')) return ['Keep your pelvis level and torso still.', 'Drive the knees or working leg outward from the hip.', 'Pause at the widest controlled position and return slowly.']
   if (n.includes('split squat') || n.includes('lunge') || n.includes('step-up')) return ['Set a stance that lets the front foot stay flat and stable.', 'Lower under control while the front knee tracks over the toes.', 'Push through the working leg; avoid springing off the back leg.']
   if (n.includes('shoulder press')) return ['Set the seat so handles begin near shoulder height and keep your back on the pad.', 'Use a comfortable neutral or slightly forward elbow position.', 'Press overhead without shrugging, then lower slowly to shoulder level.']
+  if ((n.includes('pec deck') && !n.includes('reverse')) || n.includes('cable fly')) return ['Adjust the seat so your elbows or hands line up around mid-chest; keep your shoulder blades gently against the pad.', 'Keep a soft, fixed elbow bend and open only until you feel a comfortable chest stretch.', 'Bring your upper arms together as if hugging a barrel, squeeze the pecs, then return slowly.']
   if (n.includes('press') && (n.includes('chest') || n.includes('incline') || n.includes('smith') || n.includes('db'))) return ['Adjust the seat so the handles line up with mid-to-upper chest; pin shoulder blades to the pad.', 'Lower until you feel a comfortable chest stretch with elbows about 30-60 degrees from your torso.', 'Press in and forward, squeezing the chest without shrugging or locking out aggressively.']
   if (n.includes('pulldown') || n.includes('pull-up') || n.includes('chin-up')) return ['Secure your thighs and start with arms long and chest tall.', 'Drive your elbows down toward your sides without swinging.', 'Pause when the elbows reach your torso, then return to a full controlled stretch.']
   if (n.includes('row')) return ['Brace against the pad or sit tall with arms fully extended.', 'Lead with your elbows and pull toward your lower ribs.', 'Squeeze the upper back without shrugging, then reach forward slowly.']
@@ -269,6 +270,25 @@ function exerciseSteps(name: string): string[] {
   if (n.includes('biceps') || n.includes('curl')) return ['Set the pad or cable so your upper arms stay fixed and wrists remain neutral.', 'Curl without moving your shoulders or lifting your elbows.', 'Squeeze at the top, then lower slowly to a full comfortable stretch.']
   if (n.includes('crunch')) return ['Lock your hips in place and brace before starting.', 'Bring your ribs toward your pelvis rather than pulling with your arms.', 'Pause in the shortened position and return slowly without arching hard.']
   return ['Set the machine to fit your joints and choose a light first set.', 'Move through the largest comfortable range with no momentum.', 'Control the lowering phase and stop if you feel sharp pain.']
+}
+
+function breathingFor(name: string): string {
+  const n = name.toLowerCase()
+  if (n.includes('squat')) return 'At the top, inhale into your abdomen and brace as if preparing for a punch. Keep that pressure while descending and through the bottom. Exhale gradually after passing the hardest part on the way up, then reset at the top.'
+  if (n.includes('leg press')) return 'Inhale and brace before lowering the platform. Keep your back against the pad and hold steady pressure at the bottom. Exhale as you push through the hardest part; do not let your lower back round.'
+  if (n.includes('romanian') || n.includes('hyperextension') || n.includes('pull-through') || n.includes('hip thrust') || n.includes('glute bridge')) return 'Inhale and brace before the hinge or lowering phase. Keep your ribs stacked over your pelvis. Exhale as you drive the hips through, without leaning back at the finish.'
+  if (n.includes('split squat') || n.includes('lunge') || n.includes('step-up')) return 'Inhale and brace before lowering. Keep steady trunk pressure at the bottom, then exhale as the working leg drives you up.'
+  if (n.includes('press') && !n.includes('pressdown')) return 'Inhale while lowering the handles or weight toward you. Keep your torso braced, then exhale as you press through the hardest part.'
+  if ((n.includes('pec deck') && !n.includes('reverse')) || n.includes('fly')) return 'Inhale as the arms open into the chest stretch. Exhale while bringing the upper arms together and squeezing the pecs.'
+  if (n.includes('pulldown') || n.includes('pull-up') || n.includes('chin-up') || n.includes('row')) return 'Inhale as the arms lengthen. Exhale while driving the elbows down or back, without losing your braced torso position.'
+  if (n.includes('leg curl') || n.includes('nordic')) return 'Inhale as the knees straighten. Exhale while bending the knees and squeezing the hamstrings.'
+  if (n.includes('leg extension')) return 'Inhale while lowering the pad. Exhale while straightening the knees and squeezing the quads.'
+  if (n.includes('calf')) return 'Inhale while lowering into the calf stretch. Exhale as you rise onto your toes and pause at the top.'
+  if (n.includes('adduction') || n.includes('abduction') || n.includes('lateral raise') || n.includes('reverse pec') || n.includes('rear-delt')) return 'Inhale on the controlled return. Exhale while moving the pads, arms, or legs into the working position.'
+  if (n.includes('triceps') || n.includes('pressdown') || n.includes('skull') || n.includes('french')) return 'Inhale while bending the elbows. Exhale while straightening them and squeezing the triceps.'
+  if (n.includes('biceps') || n.includes('curl')) return 'Inhale while lowering to the stretch. Exhale while curling and squeezing the biceps.'
+  if (n.includes('crunch') || n.includes('dead bug') || n.includes('bird dog') || n.includes('pallof')) return 'Exhale gently as you perform the working movement and tighten the abdomen. Inhale during the controlled return without letting the lower back arch.'
+  return 'Inhale during the controlled lowering phase and exhale during the lifting phase. Keep your torso gently braced throughout.'
 }
 
 type Muscle = 'chest' | 'shoulders' | 'back' | 'biceps' | 'triceps' | 'abs' | 'glutes' | 'quads' | 'hamstrings' | 'adductors' | 'abductors' | 'calves'
@@ -284,6 +304,7 @@ function targetMuscles(name: string): { primary: Muscle[]; secondary: Muscle[] }
   if (n.includes('calf')) return { primary: ['calves'], secondary: [] }
   if (n.includes('crunch')) return { primary: ['abs'], secondary: [] }
   if (n.includes('shoulder press')) return { primary: ['shoulders'], secondary: ['triceps'] }
+  if ((n.includes('pec deck') && !n.includes('reverse')) || n.includes('cable fly')) return { primary: ['chest'], secondary: ['shoulders'] }
   if (n.includes('chest') || n.includes('incline') || (n.includes('press') && !n.includes('down'))) return { primary: ['chest'], secondary: ['shoulders', 'triceps'] }
   if (n.includes('pulldown') || n.includes('pull-up') || n.includes('chin-up')) return { primary: ['back'], secondary: ['biceps'] }
   if (n.includes('row')) return { primary: ['back'], secondary: ['biceps', 'shoulders'] }
@@ -363,7 +384,7 @@ function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: {
       <label>Exercise or substitute<select value={sub} onChange={(e) => setSub(e.target.value)}><option>{exercise.name}</option>{exercise.subs.map((s) => <option key={s}>{s}</option>)}</select></label>
       <div className="detail-tabs"><button className={detailView === 'target' ? 'active' : ''} onClick={() => setDetailView('target')}>Target</button><button className={detailView === 'instructions' ? 'active' : ''} onClick={() => setDetailView('instructions')}>Instructions</button><button className={detailView === 'warmup' ? 'active' : ''} onClick={() => setDetailView('warmup')}>Warm-up</button></div>
       {detailView === 'target' && <MuscleMap target={target}/>}
-      {detailView === 'instructions' && <div className="how-to"><div className="how-to-heading"><b>How to do {sub}</b><a href={video.url} target="_blank" rel="noreferrer">{video.label}<ExternalLink/></a></div><ol>{steps.map((step) => <li key={step}>{step}</li>)}</ol><div className="breathing"><Wind/><p><b>Breathing:</b> inhale while lowering; exhale while lifting. Brace your trunk before each rep. A brief breath hold is only for trained lifters on very heavy efforts and raises blood pressure.</p></div></div>}
+      {detailView === 'instructions' && <div className="how-to"><div className="how-to-heading"><b>How to do {sub}</b><a href={video.url} target="_blank" rel="noreferrer">{video.label}<ExternalLink/></a></div><ol>{steps.map((step) => <li key={step}>{step}</li>)}</ol><div className="breathing"><Wind/><p><b>Breathing:</b> {breathingFor(sub)}</p></div></div>}
       {detailView === 'warmup' && <div className="how-to"><b>Ramp up, do not tire yourself</b><ol>{warmupFor(sub, weight).map((step) => <li key={step}>{step}</li>)}</ol><p className="warmup-note">Warm-up sets do not count toward the listed working sets. Later isolation exercises usually need only one easy set.</p></div>}
       <div className="set-entry no-rir"><label>Weight <span><input type="number" min="0" step="0.5" value={weight} onChange={(e) => setWeight(Number(e.target.value))} /> kg</span></label><label>Reps <input type="number" min="1" value={reps} onChange={(e) => setReps(Number(e.target.value))} /></label><button className="primary" onClick={() => addSet(sub, weight, reps)}><Plus /> Log set</button></div>
     </div>}
