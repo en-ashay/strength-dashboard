@@ -49,6 +49,7 @@ h2, h3, p { margin-top: 0; }
 .exercise-index { color: #555; font: 14px 'DM Mono'; }
 .exercise-summary h3 { margin: 0 0 4px; font-size: 16px; }
 .exercise-summary p { color: #858580; margin: 0; font-size: 13px; }
+.exercise-summary .sub-hint { display: block; color: var(--acid); font-size: 9px; margin-top: 5px; letter-spacing: .04em; text-transform: uppercase; }
 .previous { text-align: right; display: grid; }
 .previous small { color: #555; font: 9px 'DM Mono'; }
 .previous b { font: 500 13px 'DM Mono'; }

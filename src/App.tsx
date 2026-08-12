@@ -24,11 +24,12 @@ const supabase = createClient(
 
 const sessions: Record<string, { label: string; focus: string; color: string; exercises: Exercise[] }> = {
   lowerA: { label: 'Lower A', focus: 'Quad + strength', color: '#d9ff59', exercises: [
-    { name: 'Hack Squat', sets: 3, reps: '5-8', rir: '1-2', rest: '3 min', why: 'Stable, deep knee flexion and easy progression with less systemic fatigue than a barbell squat.', subs: ['Pendulum squat', 'Leg press'] },
+    { name: 'Hack Squat', sets: 3, reps: '5-8', rir: '1-2', rest: '3 min', why: 'Stable, deep knee flexion and easy progression with less systemic fatigue than a barbell squat.', subs: ['Machine squat', 'Pendulum squat', 'Leg press', 'Belt squat'] },
     { name: 'Romanian Deadlift', sets: 3, reps: '6-10', rir: '2', rest: '3 min', why: 'High-tension hip hinge through a long hamstring length.', subs: ['45 degree hyperextension', 'DB Romanian deadlift'] },
     { name: 'Leg Extension', sets: 2, reps: '10-15', rir: '1', rest: '90 sec', why: 'Direct rectus femoris and quad work without more axial fatigue.', subs: ['Sissy squat', 'Reverse Nordic'] },
     { name: 'Seated Leg Curl', sets: 2, reps: '10-15', rir: '1', rest: '90 sec', why: 'Trains knee flexion with hamstrings at a long muscle length.', subs: ['Lying leg curl', 'Nordic curl'] },
     { name: 'Standing Calf Raise', sets: 3, reps: '8-12', rir: '1', rest: '90 sec', why: 'Straight-knee calf work emphasizes gastrocnemius.', subs: ['Leg press calf raise', 'Single-leg calf raise'] },
+    { name: 'Hip Adduction Machine', sets: 2, reps: '12-20', rir: '1-2', rest: '60 sec', why: 'Adds direct inner-thigh work beyond the adductor stimulus already provided by deep squats and split squats.', subs: ['Cable hip adduction', 'Wide-stance leg press'] },
   ] },
   upperA: { label: 'Upper A', focus: 'Press + pull strength', color: '#ff8b6a', exercises: [
     { name: 'Incline DB Press', sets: 3, reps: '6-10', rir: '1-2', rest: '3 min', why: 'Stable press with strong upper-chest stimulus and free shoulder path.', subs: ['Incline machine press', 'Low-incline Smith press'] },
@@ -39,12 +40,13 @@ const sessions: Record<string, { label: string; focus: string; color: string; ex
     { name: 'Bayesian Cable Curl', sets: 2, reps: '10-15', rir: '1', rest: '75 sec', why: 'Loads the biceps in a lengthened position.', subs: ['Incline DB curl', 'Cable curl'] },
   ] },
   lowerB: { label: 'Lower B', focus: 'Glute + hamstring', color: '#75d7ff', exercises: [
-    { name: 'Leg Press', sets: 3, reps: '8-12', rir: '2', rest: '3 min', why: 'Stable bilateral leg work with low skill and fatigue cost.', subs: ['Hack squat', 'Machine squat'] },
+    { name: 'Leg Press', sets: 3, reps: '8-12', rir: '2', rest: '3 min', why: 'Stable bilateral leg work with low skill and fatigue cost.', subs: ['Machine squat', 'Hack squat', 'Pendulum squat', 'Belt squat'] },
     { name: 'Bulgarian Split Squat', sets: 3, reps: '8-12', rir: '2', rest: '2 min', why: 'Unilateral strength and hip stability useful for racket sports.', subs: ['Reverse lunge', 'DB step-up'] },
     { name: '45 Degree Hyperextension', sets: 3, reps: '10-15', rir: '2', rest: '2 min', why: 'Glute-biased hinge with less soreness than another heavy RDL day.', subs: ['Cable pull-through', 'Hip thrust'] },
     { name: 'Lying Leg Curl', sets: 3, reps: '8-12', rir: '1', rest: '90 sec', why: 'Complements hip extension with direct knee-flexion work.', subs: ['Seated leg curl', 'Assisted Nordic curl'] },
     { name: 'Seated Calf Raise', sets: 3, reps: '10-15', rir: '1', rest: '90 sec', why: 'Bent-knee calf work emphasizes soleus for running and court sports.', subs: ['Bent-knee calf raise', 'Leg press calf raise'] },
     { name: 'Cable Crunch', sets: 2, reps: '10-15', rir: '1', rest: '75 sec', why: 'Progressive loaded trunk flexion.', subs: ['Machine crunch', 'Reverse crunch'] },
+    { name: 'Hip Abduction Machine', sets: 2, reps: '12-20', rir: '1-2', rest: '60 sec', why: 'Directly trains glute medius and minimus for hip stability during badminton and tennis.', subs: ['Cable hip abduction', 'Lateral band walk'] },
   ] },
   upperB: { label: 'Upper B', focus: 'Back + shoulders', color: '#c6a5ff', exercises: [
     { name: 'Machine Chest Press', sets: 3, reps: '8-12', rir: '2', rest: '2 min', why: 'Stable chest loading after swimming, without demanding setup.', subs: ['Flat DB press', 'Cable chest press'] },
@@ -180,7 +182,7 @@ function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: {
   const [sub, setSub] = useState(exercise.name)
   return <article className={`exercise-card ${expanded ? 'expanded' : ''}`}>
     <button className="exercise-summary" onClick={toggle}>
-      <span className="exercise-index">{String(index + 1).padStart(2, '0')}</span><div><h3>{sub}</h3><p>{exercise.sets} sets · {exercise.reps} reps · {exercise.rir} RIR</p></div>
+      <span className="exercise-index">{String(index + 1).padStart(2, '0')}</span><div><h3>{sub}</h3><p>{exercise.sets} sets · {exercise.reps} reps · {exercise.rir} RIR</p><small className="sub-hint">{expanded ? 'Choose below' : `${exercise.subs.length} substitutes · tap to view`}</small></div>
       <span className="previous">{previous ? <><small>LAST</small><b>{previous.weight} kg × {previous.reps}</b></> : <><small>REST</small><b>{exercise.rest}</b></>}</span><ChevronDown />
     </button>
     {expanded && <div className="exercise-detail">
