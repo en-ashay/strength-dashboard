@@ -210,7 +210,7 @@ function App() {
       <main>
         <header className="mobile-header"><button className="brand"><span>AS</span><b>ASHAY STRENGTH</b></button><button onClick={() => setShowProfile(!showProfile)}><CircleUserRound /></button></header>
         <div className="person-switch" role="group" aria-label="Choose training profile"><Users/><button className={profile === 'ashay' ? 'active' : ''} onClick={() => switchProfile('ashay')}>Ashay</button><button className={profile === 'girlfriend' ? 'active' : ''} onClick={() => switchProfile('girlfriend')}>Kalyani</button></div>
-        {profile === 'girlfriend' && <div className="profile-setup-note"><Sparkles/><p><b>Kalyani’s beginner plan.</b> Stable machines, lower volume and back-supported movements. Stop any exercise that worsens her back pain.</p></div>}
+        {profile === 'girlfriend' && <div className="profile-setup-note"><Sparkles/><p><b>Train-together mode.</b> Kalyani has the same primary exercises, order and training days as Ashay. Only her beginner sets, rep targets and back-friendly substitutes differ.</p></div>}
         {tab === 'today' && <Today profile={profile} sessions={sessions} sessionKey={activeSession} setSessionKey={setActiveSession} logs={logs} addSet={addSet} openExercise={openExercise} setOpenExercise={setOpenExercise} />}
         {tab === 'plan' && <Plan profile={profile} sessions={sessions} schedule={schedule} setSchedule={setSchedule} />}
         {tab === 'nutrition' && <Nutrition profile={profile} measurements={measurements} />}
@@ -355,7 +355,7 @@ function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: {
   const video = videoFor(sub)
   return <article className={`exercise-card ${expanded ? 'expanded' : ''}`}>
     <button className="exercise-summary" onClick={toggle}>
-      <span className="exercise-index">{String(index + 1).padStart(2, '0')}</span><div><h3>{sub}</h3><p>{exercise.sets} sets · {exercise.reps} reps · {exercise.rest} rest</p><small className="sub-hint">{expanded ? 'Choose below' : '2 substitutes + steps · tap to view'}</small></div>
+      <span className="exercise-index">{String(index + 1).padStart(2, '0')}</span><div><h3>{sub}</h3><p>{exercise.sets} sets · {exercise.reps} reps · {exercise.rest} rest</p><small className="sub-hint">{expanded ? 'Choose below' : '2 substitutes · muscles · steps · breathing'}</small></div>
       <span className="previous">{previous ? <><small>LAST</small><b>{previous.weight} kg × {previous.reps}</b></> : <><small>REST</small><b>{exercise.rest}</b></>}</span><ChevronDown />
     </button>
     {expanded && <div className="exercise-detail">
