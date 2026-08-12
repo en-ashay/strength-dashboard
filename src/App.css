@@ -101,16 +101,20 @@ h2, h3, p { margin-top: 0; }
 .detail-tabs { display: flex; gap: 4px; margin-top: 16px; padding: 4px; border: 1px solid #292929; border-radius: 8px; width: fit-content; }
 .detail-tabs button { color: #777; padding: 8px 14px; border-radius: 5px; font-size: 11px; font-weight: 700; }
 .detail-tabs button.active { color: #101010; background: var(--acid); }
-.muscle-map { margin-top: 14px; display: grid; grid-template-columns: minmax(260px, 430px) 1fr; align-items: center; gap: 20px; border: 1px solid #292929; border-radius: 9px; padding: 14px; background: #111; }
-.muscle-map svg { width: 100%; max-height: 310px; }
+.muscle-map { margin-top: 14px; display: grid; grid-template-columns: minmax(360px, 1.4fr) 1fr; align-items: center; gap: 24px; border: 1px solid #292929; border-radius: 9px; padding: 18px; background: #111; }
+.muscle-map svg { width: 100%; max-height: 430px; }
 .muscle-map text { fill: #666; font: 9px 'DM Mono'; letter-spacing: .12em; }
 .body-base { fill: #222; stroke: #4a4a4a; stroke-width: 1.2; }
+.body-outline { fill: none; stroke: #4a4a4a; stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
 .inactive-muscle { fill: #303030; stroke: #4a4a4a; stroke-width: .8; }
 .primary-muscle { fill: var(--acid); stroke: #efffb2; stroke-width: 1.2; filter: drop-shadow(0 0 4px rgba(217,255,89,.3)); }
 .secondary-muscle { fill: #75d7ff; stroke: #bcecff; stroke-width: 1; }
-.muscle-legend { display: grid; gap: 12px; color: #aaa; font-size: 12px; text-transform: capitalize; }
-.muscle-legend span { display: flex; align-items: center; gap: 8px; }
+.muscle-legend { display: grid; gap: 16px; color: #aaa; font-size: 12px; text-transform: capitalize; }
+.muscle-legend span { display: grid; grid-template-columns: 11px 1fr; align-items: center; gap: 4px 9px; line-height: 1.5; }
+.muscle-legend span b { color: white; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.muscle-legend span:not(b) { color: #aaa; }
 .muscle-legend i { width: 11px; height: 11px; border-radius: 50%; }
+.muscle-legend small { color: #60605c; line-height: 1.5; text-transform: none; }
 .legend-primary { background: var(--acid); }
 .legend-secondary { background: #75d7ff; }
 .breathing { display: flex; gap: 10px; margin-top: 16px; padding: 12px; background: #151c20; border-left: 2px solid #75d7ff; }

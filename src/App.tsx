@@ -280,6 +280,7 @@ function Today({ profile, sessions, sessionKey, setSessionKey, logs, addSet, ope
 function exerciseSteps(name: string): string[] {
   const n = name.toLowerCase()
   if (n.includes('barbell') && n.includes('squat')) return ['Set the bar across your upper traps or rear delts, grip it firmly, step out and place feet around shoulder width.', 'Inhale and brace before descending; sit between your hips while keeping the whole foot planted and knees tracking over toes.', 'Reach your deepest controlled position, then drive the floor away while your hips and chest rise together. Re-brace at the top.']
+  if (n.includes('reverse nordic')) return ['Kneel on a padded surface with hips fully extended and torso in a straight line from knees to shoulders.', 'Brace your abdomen and lean the whole body backward without bending at the hips.', 'Use the quadriceps to pull yourself upright; begin with a short, pain-free range.']
   if (n.includes('squat') || n.includes('leg press')) return ['Set feet around shoulder width and keep your whole foot planted.', 'Brace your trunk, lower as deep as you can without your pelvis rolling off the pad.', 'Drive through the mid-foot; keep knees tracking in line with your toes.']
   if (n.includes('romanian') || n.includes('hyperextension') || n.includes('pull-through') || n.includes('hip thrust')) return ['Set a neutral spine and brace before moving.', 'Push your hips back until you feel the hamstrings or glutes stretch.', 'Drive the hips forward without leaning back or overextending your spine.']
   if (n.includes('leg extension')) return ['Align your knee with the machine pivot and place the pad above your ankle.', 'Hold the handles and extend your knees without lifting your hips.', 'Squeeze the quads briefly, then lower under control.']
@@ -310,6 +311,7 @@ function breathingFor(name: string): string {
   if (n.includes('press') && !n.includes('pressdown')) return 'Inhale while lowering the handles or weight toward you. Keep your torso braced, then exhale as you press through the hardest part.'
   if ((n.includes('pec deck') && !n.includes('reverse')) || n.includes('fly')) return 'Inhale as the arms open into the chest stretch. Exhale while bringing the upper arms together and squeezing the pecs.'
   if (n.includes('pulldown') || n.includes('pull-up') || n.includes('chin-up') || n.includes('row')) return 'Inhale as the arms lengthen. Exhale while driving the elbows down or back, without losing your braced torso position.'
+  if (n.includes('reverse nordic')) return 'Inhale and brace as the straight body leans backward. Exhale while the quadriceps pull you upright.'
   if (n.includes('leg curl') || n.includes('nordic')) return 'Inhale as the knees straighten. Exhale while bending the knees and squeezing the hamstrings.'
   if (n.includes('leg extension')) return 'Inhale while lowering the pad. Exhale while straightening the knees and squeezing the quads.'
   if (n.includes('calf')) return 'Inhale while lowering into the calf stretch. Exhale as you rise onto your toes and pause at the top.'
@@ -320,26 +322,44 @@ function breathingFor(name: string): string {
   return 'Inhale during the controlled lowering phase and exhale during the lifting phase. Keep your torso gently braced throughout.'
 }
 
-type Muscle = 'chest' | 'shoulders' | 'back' | 'biceps' | 'triceps' | 'abs' | 'glutes' | 'quads' | 'hamstrings' | 'adductors' | 'abductors' | 'calves'
+type Muscle =
+  | 'upper chest' | 'mid chest'
+  | 'front delts' | 'side delts' | 'rear delts'
+  | 'lats' | 'upper back' | 'spinal erectors'
+  | 'biceps' | 'brachialis' | 'triceps' | 'triceps long head'
+  | 'rectus abdominis' | 'deep core'
+  | 'glute max' | 'glute med/min'
+  | 'quadriceps' | 'hamstrings' | 'adductors'
+  | 'gastrocnemius' | 'soleus'
 
 function targetMuscles(name: string): { primary: Muscle[]; secondary: Muscle[] } {
   const n = name.toLowerCase()
-  if (n.includes('adduction') || n.includes('wide-stance')) return { primary: ['adductors'], secondary: ['glutes', 'quads'] }
-  if (n.includes('abduction') || n.includes('band walk')) return { primary: ['abductors'], secondary: ['glutes'] }
-  if (n.includes('squat') || n.includes('leg press') || n.includes('lunge') || n.includes('split squat') || n.includes('step-up')) return { primary: ['quads', 'glutes'], secondary: ['adductors', 'hamstrings'] }
-  if (n.includes('romanian') || n.includes('hyperextension') || n.includes('pull-through') || n.includes('hip thrust')) return { primary: ['hamstrings', 'glutes'], secondary: ['back'] }
-  if (n.includes('leg extension') || n.includes('reverse nordic') || n.includes('sissy')) return { primary: ['quads'], secondary: [] }
-  if ((n.includes('curl') && n.includes('leg')) || n.includes('nordic')) return { primary: ['hamstrings'], secondary: ['calves'] }
-  if (n.includes('calf')) return { primary: ['calves'], secondary: [] }
-  if (n.includes('crunch')) return { primary: ['abs'], secondary: [] }
-  if (n.includes('shoulder press')) return { primary: ['shoulders'], secondary: ['triceps'] }
-  if ((n.includes('pec deck') && !n.includes('reverse')) || n.includes('cable fly')) return { primary: ['chest'], secondary: ['shoulders'] }
-  if (n.includes('chest') || n.includes('incline') || (n.includes('press') && !n.includes('down'))) return { primary: ['chest'], secondary: ['shoulders', 'triceps'] }
-  if (n.includes('pulldown') || n.includes('pull-up') || n.includes('chin-up')) return { primary: ['back'], secondary: ['biceps'] }
-  if (n.includes('row')) return { primary: ['back'], secondary: ['biceps', 'shoulders'] }
-  if (n.includes('lateral raise') || n.includes('reverse pec') || n.includes('rear-delt') || n.includes('face pull')) return { primary: ['shoulders'], secondary: ['back'] }
-  if (n.includes('triceps') || n.includes('skull') || n.includes('french')) return { primary: ['triceps'], secondary: [] }
-  if (n.includes('biceps') || n.includes('curl')) return { primary: ['biceps'], secondary: [] }
+  if (n.includes('adduction')) return { primary: ['adductors'], secondary: [] }
+  if (n.includes('abduction') || n.includes('band walk')) return { primary: ['glute med/min'], secondary: ['glute max'] }
+  if (n.includes('split squat') || n.includes('lunge') || n.includes('step-up')) return { primary: ['quadriceps', 'glute max'], secondary: ['adductors', 'glute med/min'] }
+  if (n.includes('wide-stance') && n.includes('leg press')) return { primary: ['quadriceps', 'glute max', 'adductors'], secondary: [] }
+  if (n.includes('squat') || n.includes('leg press')) return { primary: ['quadriceps', 'glute max'], secondary: ['adductors'] }
+  if (n.includes('hip thrust') || n.includes('glute bridge')) return { primary: ['glute max'], secondary: ['hamstrings', 'adductors'] }
+  if (n.includes('romanian') || n.includes('hyperextension') || n.includes('pull-through')) return { primary: ['hamstrings', 'glute max'], secondary: ['spinal erectors'] }
+  if (n.includes('leg extension') || n.includes('reverse nordic') || n.includes('sissy')) return { primary: ['quadriceps'], secondary: [] }
+  if ((n.includes('curl') && (n.includes('leg') || n.includes('hamstring'))) || n.includes('nordic')) return { primary: ['hamstrings'], secondary: ['gastrocnemius'] }
+  if (n.includes('seated calf') || n.includes('bent-knee calf')) return { primary: ['soleus'], secondary: ['gastrocnemius'] }
+  if (n.includes('calf')) return { primary: ['gastrocnemius'], secondary: ['soleus'] }
+  if (n.includes('dead bug') || n.includes('bird dog') || n.includes('pallof')) return { primary: ['deep core'], secondary: ['rectus abdominis', 'glute max'] }
+  if (n.includes('crunch')) return { primary: ['rectus abdominis'], secondary: ['deep core'] }
+  if (n.includes('shoulder press')) return { primary: ['front delts', 'side delts'], secondary: ['triceps'] }
+  if ((n.includes('pec deck') && !n.includes('reverse')) || n.includes('cable fly')) return { primary: ['mid chest'], secondary: ['front delts'] }
+  if (n.includes('incline') && (n.includes('press') || n.includes('smith'))) return { primary: ['upper chest'], secondary: ['front delts', 'triceps'] }
+  if (n.includes('chest press') || n.includes('flat db press')) return { primary: ['mid chest'], secondary: ['front delts', 'triceps'] }
+  if (n.includes('pulldown') || n.includes('pull-up') || n.includes('chin-up')) return { primary: ['lats'], secondary: ['biceps', 'brachialis'] }
+  if (n.includes('helms') || n.includes('t-bar') || n.includes('chest-supported') || n.includes('row')) return { primary: ['upper back', 'lats'], secondary: ['rear delts', 'biceps', 'brachialis'] }
+  if (n.includes('lateral raise')) return { primary: ['side delts'], secondary: [] }
+  if (n.includes('reverse pec') || n.includes('rear-delt')) return { primary: ['rear delts'], secondary: ['upper back'] }
+  if (n.includes('face pull')) return { primary: ['rear delts', 'upper back'], secondary: [] }
+  if ((n.includes('overhead') && n.includes('triceps')) || n.includes('french')) return { primary: ['triceps long head'], secondary: ['triceps'] }
+  if (n.includes('triceps') || n.includes('pressdown') || n.includes('skull')) return { primary: ['triceps'], secondary: ['triceps long head'] }
+  if (n.includes('preacher')) return { primary: ['biceps'], secondary: ['brachialis'] }
+  if (n.includes('biceps') || n.includes('curl')) return { primary: ['biceps'], secondary: ['brachialis'] }
   return { primary: [], secondary: [] }
 }
 
@@ -398,12 +418,36 @@ function youtubeThumbnail(url: string) {
 
 function MuscleMap({ target }: { target: { primary: Muscle[]; secondary: Muscle[] } }) {
   const tone = (muscle: Muscle) => target.primary.includes(muscle) ? 'primary-muscle' : target.secondary.includes(muscle) ? 'secondary-muscle' : 'inactive-muscle'
-  return <div className="muscle-map"><svg viewBox="0 0 300 300" role="img" aria-label="Front and back body muscle map">
-    <g transform="translate(18 8)"><text x="52" y="10">FRONT</text><circle className="body-base" cx="62" cy="30" r="16"/><path className="body-base" d="M42 50 Q62 42 82 50 L91 120 79 158 74 270H54L50 164 40 270H20L30 158 18 120Z"/>
-      <path className={tone('shoulders')} d="M41 52Q25 54 20 72L31 78 45 62ZM83 52Q99 54 104 72L93 78 79 62Z"/><path className={tone('chest')} d="M45 59Q62 53 62 79Q45 82 42 68ZM79 59Q62 53 62 79Q79 82 82 68Z"/><path className={tone('biceps')} d="M25 79L18 118 31 120 39 80ZM99 79L106 118 93 120 85 80Z"/><path className={tone('abs')} d="M48 84H76L78 132 62 151 46 132Z"/><path className={tone('adductors')} d="M51 155L61 161 55 218 43 164ZM73 155L63 161 69 218 81 164Z"/><path className={tone('quads')} d="M31 157L50 158 51 220 30 220ZM74 158L93 157 94 220 73 220Z"/><path className={tone('calves')} d="M29 226L46 226 43 268H23ZM78 226L95 226 101 268H81Z"/>
-    </g><g transform="translate(158 8)"><text x="54" y="10">BACK</text><circle className="body-base" cx="62" cy="30" r="16"/><path className="body-base" d="M42 50 Q62 42 82 50 L91 120 79 158 74 270H54L50 164 40 270H20L30 158 18 120Z"/>
-      <path className={tone('shoulders')} d="M41 52Q25 54 20 72L31 78 45 62ZM83 52Q99 54 104 72L93 78 79 62Z"/><path className={tone('back')} d="M44 57Q62 68 80 57L78 119 62 145 46 119Z"/><path className={tone('triceps')} d="M25 79L18 118 31 120 39 80ZM99 79L106 118 93 120 85 80Z"/><path className={tone('glutes')} d="M40 137Q62 130 62 160Q45 170 35 154ZM84 137Q62 130 62 160Q79 170 89 154Z"/><path className={tone('abductors')} d="M31 145L42 137 39 174 27 166ZM93 145L82 137 85 174 97 166Z"/><path className={tone('hamstrings')} d="M31 170L53 166 49 220 29 220ZM71 166L93 170 95 220 75 220Z"/><path className={tone('calves')} d="M29 226L46 226 43 268H23ZM78 226L95 226 101 268H81Z"/>
-    </g></svg><div className="muscle-legend"><span><i className="legend-primary"/>Primary: {target.primary.join(', ') || 'general'}</span><span><i className="legend-secondary"/>Supporting: {target.secondary.join(', ') || 'none'}</span></div></div>
+  return <div className="muscle-map"><svg viewBox="0 0 420 440" role="img" aria-label={`Anatomical muscle map. Primary: ${target.primary.join(', ')}. Supporting: ${target.secondary.join(', ')}`}>
+    <g transform="translate(20 10)"><text x="85" y="12">ANTERIOR · FRONT</text>
+      <ellipse className="body-base" cx="100" cy="42" rx="24" ry="29"/><path className="body-base" d="M78 67Q100 59 122 67L142 101 135 183 122 228 116 414H87L82 237 75 414H46L53 228 40 183 58 101Z"/><path className="body-outline" d="M61 76L35 101 19 170 30 176 51 116M139 76L165 101 181 170 170 176 149 116"/>
+      <path className={tone('front delts')} d="M61 74Q42 80 42 101L58 108 72 83ZM139 74Q158 80 158 101L142 108 128 83Z"/>
+      <path className={tone('upper chest')} d="M73 78Q100 68 100 98Q79 98 67 90ZM127 78Q100 68 100 98Q121 98 133 90Z"/>
+      <path className={tone('mid chest')} d="M68 92Q82 98 100 99V125Q75 126 64 108ZM132 92Q118 98 100 99V125Q125 126 136 108Z"/>
+      <path className={tone('biceps')} d="M47 106Q33 121 30 158L45 164 57 119ZM153 106Q167 121 170 158L155 164 143 119Z"/>
+      <path className={tone('brachialis')} d="M37 151L29 180 42 184 49 159ZM163 151L171 180 158 184 151 159Z"/>
+      <path className={tone('rectus abdominis')} d="M84 128H98V187L84 191 77 159ZM102 128H116L123 159 116 191 102 187Z"/>
+      <path className={tone('deep core')} d="M72 129L83 130 76 190 66 174ZM128 129L117 130 124 190 134 174Z"/>
+      <path className={tone('adductors')} d="M84 213L98 220 91 319 72 238ZM116 213L102 220 109 319 128 238Z"/>
+      <path className={tone('quadriceps')} d="M58 218Q76 206 86 220L82 322 54 325 47 260ZM142 218Q124 206 114 220L118 322 146 325 153 260Z"/>
+      <path className={tone('gastrocnemius')} d="M54 330Q70 322 79 335L73 388 49 388ZM146 330Q130 322 121 335L127 388 151 388Z"/>
+      <path className={tone('soleus')} d="M50 369L73 369 68 411H47ZM150 369L127 369 132 411H153Z"/>
+    </g>
+    <g transform="translate(220 10)"><text x="82" y="12">POSTERIOR · BACK</text>
+      <ellipse className="body-base" cx="100" cy="42" rx="24" ry="29"/><path className="body-base" d="M78 67Q100 59 122 67L142 101 135 183 122 228 116 414H87L82 237 75 414H46L53 228 40 183 58 101Z"/><path className="body-outline" d="M61 76L35 101 19 170 30 176 51 116M139 76L165 101 181 170 170 176 149 116"/>
+      <path className={tone('rear delts')} d="M61 74Q42 80 42 101L58 108 72 83ZM139 74Q158 80 158 101L142 108 128 83Z"/>
+      <path className={tone('upper back')} d="M76 73L100 67 124 73 117 120 100 137 83 120Z"/>
+      <path className={tone('lats')} d="M73 101Q82 119 96 139L82 181 57 159 65 112ZM127 101Q118 119 104 139L118 181 143 159 135 112Z"/>
+      <path className={tone('spinal erectors')} d="M91 126L98 131 96 204 86 191ZM109 126L102 131 104 204 114 191Z"/>
+      <path className={tone('triceps')} d="M47 106Q33 121 30 158L45 164 57 119ZM153 106Q167 121 170 158L155 164 143 119Z"/>
+      <path className={tone('triceps long head')} d="M48 111L57 117 48 151 41 145ZM152 111L143 117 152 151 159 145Z"/>
+      <path className={tone('glute med/min')} d="M59 198Q78 187 91 202L80 222 56 218ZM141 198Q122 187 109 202L120 222 144 218Z"/>
+      <path className={tone('glute max')} d="M57 215Q80 198 99 218L97 251Q73 262 53 240ZM143 215Q120 198 101 218L103 251Q127 262 147 240Z"/>
+      <path className={tone('hamstrings')} d="M55 249Q75 254 95 258L84 328 54 322 47 274ZM145 249Q125 254 105 258L116 328 146 322 153 274Z"/>
+      <path className={tone('gastrocnemius')} d="M52 329Q69 318 81 337L73 382 48 387ZM148 329Q131 318 119 337L127 382 152 387Z"/>
+      <path className={tone('soleus')} d="M49 369L73 369 68 411H47ZM151 369L127 369 132 411H153Z"/>
+    </g>
+  </svg><div className="muscle-legend"><span><i className="legend-primary"/><b>Primary</b>{target.primary.join(', ') || 'General movement'}</span><span><i className="legend-secondary"/><b>Supporting</b>{target.secondary.join(', ') || 'None highlighted'}</span><small>Highlights show the main muscles trained, not every stabilizer active during the exercise.</small></div></div>
 }
 
 function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: { exercise: Exercise; index: number; previous?: SetLog; expanded: boolean; toggle: () => void; addSet: (e: string, w: number, r: number) => void }) {
