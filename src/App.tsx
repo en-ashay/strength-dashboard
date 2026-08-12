@@ -3,7 +3,8 @@ import { createClient, type User } from '@supabase/supabase-js'
 import {
   Activity, ArrowUpRight, BarChart3, CalendarDays, Check,
   ChevronDown, CircleUserRound, Dumbbell, Flame, LogOut,
-  ExternalLink, Medal, Plus, Save, Scale, Sparkles, TrendingUp, Wind,
+  ExternalLink, FileJson, FileSpreadsheet, Medal, Plus, Save,
+  Scale, Sparkles, TrendingUp, Users, Wind,
 } from 'lucide-react'
 import {
   Area, AreaChart, CartesianGrid, Line, LineChart,
@@ -13,6 +14,7 @@ import './App.css'
 
 type Tab = 'today' | 'plan' | 'progress'
 type Day = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'
+type Profile = 'ashay' | 'girlfriend'
 type SetLog = { exercise: string; weight: number; reps: number; date: string }
 type Measurement = { date: string; weight: number; waist: number; chest: number; arm: number; thigh: number; hip: number; neck: number }
 type Exercise = { name: string; sets: number; reps: string; rest: string; why: string; subs: [string, string] }
@@ -72,11 +74,25 @@ function loadLocal<T>(key: string, fallback: T): T {
   try { return JSON.parse(localStorage.getItem(key) || '') as T } catch { return fallback }
 }
 
+function downloadFile(name: string, content: string, type: string) {
+  const url = URL.createObjectURL(new Blob([content], { type }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = name
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+function csvCell(value: string | number) {
+  return `"${String(value).replaceAll('"', '""')}"`
+}
+
 function App() {
   const [tab, setTab] = useState<Tab>('today')
-  const [schedule, setSchedule] = useState(() => loadLocal('ash-schedule', defaultSchedule))
-  const [logs, setLogs] = useState<SetLog[]>(() => loadLocal('ash-logs', []))
-  const [measurements, setMeasurements] = useState<Measurement[]>(() => loadLocal('ash-measurements', [baseline]))
+  const [profile, setProfile] = useState<Profile>(() => loadLocal('ash-active-profile', 'ashay'))
+  const [schedule, setSchedule] = useState(() => loadLocal(`ash-schedule-${loadLocal<Profile>('ash-active-profile', 'ashay')}`, defaultSchedule))
+  const [logs, setLogs] = useState<SetLog[]>(() => loadLocal(`ash-logs-${loadLocal<Profile>('ash-active-profile', 'ashay')}`, []))
+  const [measurements, setMeasurements] = useState<Measurement[]>(() => loadLocal(`ash-measurements-${loadLocal<Profile>('ash-active-profile', 'ashay')}`, loadLocal<Profile>('ash-active-profile', 'ashay') === 'ashay' ? [baseline] : []))
   const [activeSession, setActiveSession] = useState('lowerA')
   const [openExercise, setOpenExercise] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
@@ -90,20 +106,20 @@ function App() {
     return () => data.subscription.unsubscribe()
   }, [])
 
-  useEffect(() => { localStorage.setItem('ash-schedule', JSON.stringify(schedule)) }, [schedule])
-  useEffect(() => { localStorage.setItem('ash-logs', JSON.stringify(logs)) }, [logs])
-  useEffect(() => { localStorage.setItem('ash-measurements', JSON.stringify(measurements)) }, [measurements])
+  useEffect(() => { localStorage.setItem(`ash-schedule-${profile}`, JSON.stringify(schedule)) }, [schedule, profile])
+  useEffect(() => { localStorage.setItem(`ash-logs-${profile}`, JSON.stringify(logs)) }, [logs, profile])
+  useEffect(() => { localStorage.setItem(`ash-measurements-${profile}`, JSON.stringify(measurements)) }, [measurements, profile])
 
   useEffect(() => {
     if (!user) return
     Promise.all([
-      supabase.from('workout_sets').select('*').order('performed_at'),
-      supabase.from('measurements').select('*').order('measured_at'),
+      supabase.from('workout_sets').select('*').eq('profile', profile).order('performed_at'),
+      supabase.from('measurements').select('*').eq('profile', profile).order('measured_at'),
     ]).then(([setsResult, measurementsResult]) => {
       if (setsResult.data?.length) setLogs(setsResult.data.map((row) => ({ exercise: row.exercise, weight: Number(row.weight_kg), reps: row.reps, date: row.performed_at })))
       if (measurementsResult.data?.length) setMeasurements(measurementsResult.data.map((row) => ({ date: row.measured_at, weight: Number(row.weight_kg), waist: Number(row.waist_cm || 0), chest: Number(row.chest_cm || 0), arm: Number(row.arm_cm || 0), thigh: Number(row.thigh_cm || 0), hip: Number(row.hip_cm || 0), neck: Number(row.neck_cm || 0) })))
     })
-  }, [user])
+  }, [user, profile])
 
   const session = sessions[activeSession]
   const totalVolume = logs.reduce((sum, log) => sum + log.weight * log.reps, 0)
@@ -118,7 +134,16 @@ function App() {
   function addSet(exercise: string, weight: number, reps: number) {
     const entry = { exercise, weight, reps, date: new Date().toISOString() }
     setLogs((current) => [...current, entry])
-    if (user) void supabase.from('workout_sets').insert({ user_id: user.id, session_name: session.label, exercise, weight_kg: weight, reps, rir: 2, performed_at: entry.date })
+    if (user) void supabase.from('workout_sets').insert({ user_id: user.id, profile, session_name: session.label, exercise, weight_kg: weight, reps, rir: 2, performed_at: entry.date })
+  }
+
+  function switchProfile(next: Profile) {
+    localStorage.setItem('ash-active-profile', JSON.stringify(next))
+    setProfile(next)
+    setSchedule(loadLocal(`ash-schedule-${next}`, defaultSchedule))
+    setLogs(loadLocal(`ash-logs-${next}`, []))
+    setMeasurements(loadLocal(`ash-measurements-${next}`, next === 'ashay' ? [baseline] : []))
+    setOpenExercise(null)
   }
 
   return (
@@ -142,9 +167,11 @@ function App() {
 
       <main>
         <header className="mobile-header"><button className="brand"><span>AS</span><b>ASHAY STRENGTH</b></button><button onClick={() => setShowProfile(!showProfile)}><CircleUserRound /></button></header>
+        <div className="person-switch" role="group" aria-label="Choose training profile"><Users/><button className={profile === 'ashay' ? 'active' : ''} onClick={() => switchProfile('ashay')}>Ashay</button><button className={profile === 'girlfriend' ? 'active' : ''} onClick={() => switchProfile('girlfriend')}>Girlfriend</button></div>
+        {profile === 'girlfriend' && <div className="profile-setup-note"><Sparkles/><p><b>Beginner profile is ready.</b> Her records are separate. The current exercise plan is only a preview until her details are added.</p></div>}
         {tab === 'today' && <Today sessionKey={activeSession} setSessionKey={setActiveSession} logs={logs} addSet={addSet} openExercise={openExercise} setOpenExercise={setOpenExercise} />}
         {tab === 'plan' && <Plan schedule={schedule} setSchedule={setSchedule} />}
-        {tab === 'progress' && <Progress totalVolume={totalVolume} logs={logs} strengthData={strengthData} bodyData={bodyData} measurements={measurements} setMeasurements={setMeasurements} user={user} />}
+        {tab === 'progress' && <Progress profile={profile} totalVolume={totalVolume} logs={logs} strengthData={strengthData} bodyData={bodyData} measurements={measurements} setMeasurements={setMeasurements} user={user} />}
       </main>
 
       <nav className="bottom-nav">
@@ -313,18 +340,26 @@ function Plan({ schedule, setSchedule }: { schedule: Record<string, Day>; setSch
   </div>
 }
 
-function Progress({ totalVolume, logs, strengthData, bodyData, measurements, setMeasurements, user }: { totalVolume: number; logs: SetLog[]; strengthData: { week: string; e1rm: number }[]; bodyData: { date: string; weight: number; waist?: number }[]; measurements: Measurement[]; setMeasurements: React.Dispatch<React.SetStateAction<Measurement[]>>; user: User | null }) {
-  const latest = measurements[measurements.length - 1]
+function Progress({ profile, totalVolume, logs, strengthData, bodyData, measurements, setMeasurements, user }: { profile: Profile; totalVolume: number; logs: SetLog[]; strengthData: { week: string; e1rm: number }[]; bodyData: { date: string; weight: number; waist?: number }[]; measurements: Measurement[]; setMeasurements: React.Dispatch<React.SetStateAction<Measurement[]>>; user: User | null }) {
+  const emptyMeasurement: Measurement = { date: new Date().toISOString().slice(0, 10), weight: 0, waist: 0, chest: 0, arm: 0, thigh: 0, hip: 0, neck: 0 }
+  const latest = measurements[measurements.length - 1] ?? emptyMeasurement
   const [form, setForm] = useState<Measurement>({ ...latest, date: new Date().toISOString().slice(0, 10) })
   const [showForm, setShowForm] = useState(false)
   const best = logs.reduce((max, l) => Math.max(max, l.weight * (1 + l.reps / 30)), 0)
+  const exportJson = () => downloadFile(`${profile}-strength-data.json`, JSON.stringify({ exportedAt: new Date().toISOString(), profile, workoutSets: logs, measurements }, null, 2), 'application/json')
+  const exportCsv = () => {
+    const header = ['record_type', 'date', 'exercise', 'weight_kg', 'reps', 'waist_cm', 'chest_cm', 'arm_cm', 'thigh_cm', 'hip_cm', 'neck_cm']
+    const setRows = logs.map((log) => ['workout_set', log.date, log.exercise, log.weight, log.reps, '', '', '', '', '', ''])
+    const measurementRows = measurements.map((m) => ['measurement', m.date, '', m.weight, '', m.waist, m.chest, m.arm, m.thigh, m.hip, m.neck])
+    downloadFile(`${profile}-strength-data.csv`, `\uFEFF${[header, ...setRows, ...measurementRows].map((row) => row.map(csvCell).join(',')).join('\r\n')}`, 'text/csv;charset=utf-8')
+  }
   return <div className="page">
-    <div className="eyebrow">PERFORMANCE · ALL TIME</div><div className="page-title"><div><h1>Proof, not guesses.</h1><p>Strength, consistency and body trends in one view.</p></div><button className="primary" onClick={() => setShowForm(!showForm)}><Plus /> New measurement</button></div>
-    {showForm && <MeasurementForm form={form} setForm={setForm} save={() => { setMeasurements((m) => [...m, form]); if (user) void supabase.from('measurements').insert({ user_id: user.id, measured_at: form.date, weight_kg: form.weight, waist_cm: form.waist || null, chest_cm: form.chest || null, arm_cm: form.arm || null, thigh_cm: form.thigh || null, hip_cm: form.hip || null, neck_cm: form.neck || null }); setShowForm(false) }} />}
-    <section className="metric-grid"><div><TrendingUp /><small>EST. 1RM BEST</small><b>{best ? `${Math.round(best)} kg` : 'Start logging'}</b><p>Calculated from your sets</p></div><div><Dumbbell /><small>TOTAL VOLUME</small><b>{totalVolume ? `${Math.round(totalVolume).toLocaleString()} kg` : '0 kg'}</b><p>{logs.length} sets logged</p></div><div><Medal /><small>CONSISTENCY</small><b>{logs.length ? 'On track' : 'Week 1'}</b><p>Target: 4 sessions/week</p></div><div><Scale /><small>BODYWEIGHT</small><b>{latest.weight} kg</b><p>Baseline: 75.9 kg</p></div></section>
+    <div className="eyebrow">PERFORMANCE · {profile.toUpperCase()} · ALL TIME</div><div className="page-title"><div><h1>Proof, not guesses.</h1><p>Strength, consistency and body trends in one view.</p></div><div className="progress-actions"><button onClick={exportJson}><FileJson/>JSON</button><button onClick={exportCsv}><FileSpreadsheet/>Excel CSV</button><button className="primary" onClick={() => { setForm({ ...latest, date: new Date().toISOString().slice(0, 10) }); setShowForm(!showForm) }}><Plus /> New measurement</button></div></div>
+    {showForm && <MeasurementForm form={form} setForm={setForm} save={() => { setMeasurements((m) => [...m, form]); if (user) void supabase.from('measurements').insert({ user_id: user.id, profile, measured_at: form.date, weight_kg: form.weight, waist_cm: form.waist || null, chest_cm: form.chest || null, arm_cm: form.arm || null, thigh_cm: form.thigh || null, hip_cm: form.hip || null, neck_cm: form.neck || null }); setShowForm(false) }} />}
+    <section className="metric-grid"><div><TrendingUp /><small>EST. 1RM BEST</small><b>{best ? `${Math.round(best)} kg` : 'Start logging'}</b><p>Calculated from your sets</p></div><div><Dumbbell /><small>TOTAL VOLUME</small><b>{totalVolume ? `${Math.round(totalVolume).toLocaleString()} kg` : '0 kg'}</b><p>{logs.length} sets logged</p></div><div><Medal /><small>CONSISTENCY</small><b>{logs.length ? 'On track' : 'Not started'}</b><p>Based on logged sessions</p></div><div><Scale /><small>BODYWEIGHT</small><b>{latest.weight ? `${latest.weight} kg` : 'Add first entry'}</b><p>{profile === 'ashay' ? 'InBody baseline: 75.9 kg' : 'No baseline yet'}</p></div></section>
     <section className="chart-grid"><article className="chart-card wide"><div><span><small>STRENGTH TREND</small><h2>Estimated 1RM</h2></span><span className="trend"><ArrowUpRight /> Double progression</span></div><ResponsiveContainer width="100%" height={280}><AreaChart data={strengthData}><defs><linearGradient id="strength" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#d9ff59" stopOpacity={0.5}/><stop offset="95%" stopColor="#d9ff59" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2c"/><XAxis dataKey="week" stroke="#777"/><YAxis stroke="#777" domain={['dataMin - 5', 'dataMax + 5']}/><Tooltip contentStyle={{ background: '#191919', border: '1px solid #333' }}/><Area type="monotone" dataKey="e1rm" stroke="#d9ff59" strokeWidth={3} fill="url(#strength)"/></AreaChart></ResponsiveContainer></article>
     <article className="chart-card"><div><span><small>BODY TREND</small><h2>Weight</h2></span></div><ResponsiveContainer width="100%" height={280}><LineChart data={bodyData}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2c"/><XAxis dataKey="date" stroke="#777"/><YAxis stroke="#777" domain={['dataMin - 2', 'dataMax + 2']}/><Tooltip contentStyle={{ background: '#191919', border: '1px solid #333' }}/><Line type="monotone" dataKey="weight" stroke="#75d7ff" strokeWidth={3} dot={{ fill: '#75d7ff' }}/></LineChart></ResponsiveContainer></article></section>
-    <section className="measure-table"><div><h2>Latest measurements</h2><button onClick={() => setShowForm(true)}>Add entry <Plus /></button></div><div className="measurement-grid">{(['waist', 'chest', 'arm', 'thigh', 'hip', 'neck'] as const).map((key) => <span key={key}><small>{key}</small><b>{latest[key] || '—'} {latest[key] ? 'cm' : ''}</b></span>)}</div></section>
+    <section className="measure-table"><div><h2>Latest measurements</h2><button onClick={() => { setForm({ ...latest, date: new Date().toISOString().slice(0, 10) }); setShowForm(true) }}>Add entry <Plus /></button></div><div className="measurement-grid">{(['waist', 'chest', 'arm', 'thigh', 'hip', 'neck'] as const).map((key) => <span key={key}><small>{key}</small><b>{latest[key] || '—'} {latest[key] ? 'cm' : ''}</b></span>)}</div></section>
   </div>
 }
 
