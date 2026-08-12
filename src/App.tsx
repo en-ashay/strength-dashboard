@@ -24,7 +24,9 @@ const supabase = createClient(
   'sb_publishable_kwLx2flp63gSicXa8DAkyw_u4UChi1t',
 )
 
-const sessions: Record<string, { label: string; focus: string; color: string; exercises: Exercise[] }> = {
+type SessionMap = Record<string, { label: string; focus: string; color: string; exercises: Exercise[] }>
+
+const ashaySessions: SessionMap = {
   lowerA: { label: 'Lower A', focus: 'Quad + strength', color: '#d9ff59', exercises: [
     { name: 'Machine Squat', sets: 3, reps: '6-10', rest: '3 min', why: 'Stable, deep knee flexion and easy progression without needing barbell-squat skill.', subs: ['Hack squat', 'Leg press'] },
     { name: 'Romanian Deadlift', sets: 3, reps: '6-10', rest: '3 min', why: 'High-tension hip hinge through a long hamstring length.', subs: ['45 degree hyperextension', 'DB Romanian deadlift'] },
@@ -61,10 +63,46 @@ const sessions: Record<string, { label: string; focus: string; color: string; ex
   ] },
 }
 
+const kalyaniSessions: SessionMap = {
+  lowerA: { label: 'Lower A', focus: 'Learn + build confidence', color: '#d9ff59', exercises: [
+    { name: 'Leg Press', sets: 2, reps: '10-12', rest: '2 min', why: 'Back-supported leg training with a simple movement path for a beginner.', subs: ['Machine squat', 'Box squat'] },
+    { name: 'Seated Leg Curl', sets: 2, reps: '10-15', rest: '90 sec', why: 'Stable hamstring training without loading the spine.', subs: ['Lying leg curl', 'Standing leg curl'] },
+    { name: 'Leg Extension', sets: 2, reps: '10-15', rest: '90 sec', why: 'Simple direct quad work that is easy to learn and progress.', subs: ['Supported split squat', 'Low step-up'] },
+    { name: 'Hip Abduction Machine', sets: 2, reps: '12-15', rest: '60 sec', why: 'Direct glute-side training for hip and pelvic stability.', subs: ['Cable hip abduction', 'Lateral band walk'] },
+    { name: 'Seated Calf Raise', sets: 2, reps: '10-15', rest: '60 sec', why: 'Stable calf work with minimal whole-body fatigue.', subs: ['Leg press calf raise', 'Supported standing calf raise'] },
+    { name: 'Dead Bug', sets: 2, reps: '6-10/side', rest: '60 sec', why: 'Teaches trunk control while the floor supports the back.', subs: ['Bird dog', 'Pallof press'] },
+  ] },
+  upperA: { label: 'Upper A', focus: 'Supported push + pull', color: '#ff8b6a', exercises: [
+    { name: 'Machine Chest Press', sets: 2, reps: '10-12', rest: '2 min', why: 'Stable chest training with the torso supported.', subs: ['Incline machine press', 'Cable chest press'] },
+    { name: 'Neutral-Grip Lat Pulldown', sets: 2, reps: '10-12', rest: '2 min', why: 'Beginner-friendly vertical pulling with adjustable resistance.', subs: ['Machine pulldown', 'Assisted pull-up'] },
+    { name: 'Chest-Supported Machine Row', sets: 2, reps: '10-12', rest: '2 min', why: 'Trains the upper back while reducing lower-back demand.', subs: ['Seated cable row', 'Chest-supported DB row'] },
+    { name: 'Machine Lateral Raise', sets: 2, reps: '12-15', rest: '60 sec', why: 'Stable direct shoulder work with little technique demand.', subs: ['Cable lateral raise', 'Light DB lateral raise'] },
+    { name: 'Cable Triceps Pressdown', sets: 2, reps: '10-15', rest: '60 sec', why: 'Simple arm training with controlled resistance.', subs: ['Machine triceps extension', 'Single-arm pressdown'] },
+    { name: 'Machine Biceps Curl', sets: 2, reps: '10-15', rest: '60 sec', why: 'The machine support makes it easier to isolate the biceps.', subs: ['Cable curl', 'Seated DB curl'] },
+  ] },
+  lowerB: { label: 'Lower B', focus: 'Glutes + stability', color: '#75d7ff', exercises: [
+    { name: 'Machine Squat', sets: 2, reps: '8-12', rest: '2 min', why: 'A supported squat pattern that can be kept shallow and light while learning.', subs: ['Leg press', 'Box squat'] },
+    { name: 'Glute Bridge Machine', sets: 2, reps: '10-15', rest: '90 sec', why: 'Direct glute work with a supported, controlled setup.', subs: ['Floor glute bridge', 'Hip thrust machine'] },
+    { name: 'Lying Leg Curl', sets: 2, reps: '10-15', rest: '90 sec', why: 'Stable knee-flexion work for the hamstrings.', subs: ['Seated leg curl', 'Standing leg curl'] },
+    { name: 'Hip Adduction Machine', sets: 2, reps: '12-15', rest: '60 sec', why: 'Direct inner-thigh training with back support.', subs: ['Cable hip adduction', 'Wide-stance leg press'] },
+    { name: 'Standing Calf Raise', sets: 2, reps: '10-15', rest: '60 sec', why: 'Builds calf strength using a simple supported movement.', subs: ['Leg press calf raise', 'Seated calf raise'] },
+    { name: 'Bird Dog', sets: 2, reps: '6-10/side', rest: '60 sec', why: 'Builds controlled trunk and hip stability without external spinal loading.', subs: ['Dead bug', 'Pallof press'] },
+  ] },
+  upperB: { label: 'Upper B', focus: 'Back + shoulders', color: '#c6a5ff', exercises: [
+    { name: 'Incline Machine Press', sets: 2, reps: '10-12', rest: '2 min', why: 'A supported second chest pattern with a comfortable pressing angle.', subs: ['Machine chest press', 'Incline DB press'] },
+    { name: 'Machine Row', sets: 2, reps: '10-12', rest: '2 min', why: 'Stable back training without unsupported bending.', subs: ['Chest-supported row', 'Seated cable row'] },
+    { name: 'One-Arm Lat Pulldown', sets: 2, reps: '10-12/side', rest: '90 sec', why: 'Allows each side to learn a controlled pulling path.', subs: ['Machine pulldown', 'Neutral-grip pulldown'] },
+    { name: 'Reverse Pec Deck', sets: 2, reps: '12-15', rest: '60 sec', why: 'Supports the torso while training rear shoulders and upper back.', subs: ['Cable rear-delt fly', 'Face pull'] },
+    { name: 'Machine Shoulder Press', sets: 2, reps: '10-12', rest: '90 sec', why: 'Back-supported shoulder training; use only a pain-free range.', subs: ['Cable shoulder press', 'High-incline machine press'] },
+    { name: 'Cable Curl + Pressdown', sets: 2, reps: '10-15 each', rest: '60 sec', why: 'A simple arm pairing to finish without loading the back.', subs: ['Machine curl + extension', 'Seated DB curl + pressdown'] },
+  ] },
+}
+
 const days: Day[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const defaultSchedule: Record<string, Day> = { lowerA: 'Mon', upperA: 'Tue', lowerB: 'Wed', upperB: 'Fri' }
 const sports: Partial<Record<Day, string>> = { Thu: 'Swim · 7 PM', Fri: 'Badminton · 1 hr', Sun: 'Tennis · coached' }
 const baseline = { date: '2026-01-27', weight: 75.9, waist: 0, chest: 0, arm: 0, thigh: 0, hip: 0, neck: 0 }
+const kalyaniBaseline = { date: '2026-08-12', weight: 58, waist: 0, chest: 0, arm: 0, thigh: 0, hip: 0, neck: 0 }
 const demoStrength = [
   { week: 'W1', e1rm: 72 }, { week: 'W2', e1rm: 74 }, { week: 'W3', e1rm: 75 },
   { week: 'W4', e1rm: 77 }, { week: 'W5', e1rm: 79 }, { week: 'W6', e1rm: 81 },
@@ -92,7 +130,7 @@ function App() {
   const [profile, setProfile] = useState<Profile>(() => loadLocal('ash-active-profile', 'ashay'))
   const [schedule, setSchedule] = useState(() => loadLocal(`ash-schedule-${loadLocal<Profile>('ash-active-profile', 'ashay')}`, defaultSchedule))
   const [logs, setLogs] = useState<SetLog[]>(() => loadLocal(`ash-logs-${loadLocal<Profile>('ash-active-profile', 'ashay')}`, []))
-  const [measurements, setMeasurements] = useState<Measurement[]>(() => loadLocal(`ash-measurements-${loadLocal<Profile>('ash-active-profile', 'ashay')}`, loadLocal<Profile>('ash-active-profile', 'ashay') === 'ashay' ? [baseline] : []))
+  const [measurements, setMeasurements] = useState<Measurement[]>(() => loadLocal(`ash-measurements-${loadLocal<Profile>('ash-active-profile', 'ashay')}`, loadLocal<Profile>('ash-active-profile', 'ashay') === 'ashay' ? [baseline] : [kalyaniBaseline]))
   const [activeSession, setActiveSession] = useState('lowerA')
   const [openExercise, setOpenExercise] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
@@ -121,9 +159,10 @@ function App() {
     })
   }, [user, profile])
 
+  const sessions = profile === 'ashay' ? ashaySessions : kalyaniSessions
   const session = sessions[activeSession]
   const totalVolume = logs.reduce((sum, log) => sum + log.weight * log.reps, 0)
-  const strengthData = logs.length ? logs.slice(-8).map((l, i) => ({ week: `${i + 1}`, e1rm: Math.round(l.weight * (1 + l.reps / 30)) })) : demoStrength
+  const strengthData = logs.length ? logs.slice(-8).map((l, i) => ({ week: `${i + 1}`, e1rm: Math.round(l.weight * (1 + l.reps / 30)) })) : profile === 'ashay' ? demoStrength : []
   const bodyData = measurements.map((m) => ({ date: m.date.slice(5), weight: m.weight, waist: m.waist || undefined }))
 
   async function magicLink() {
@@ -142,7 +181,7 @@ function App() {
     setProfile(next)
     setSchedule(loadLocal(`ash-schedule-${next}`, defaultSchedule))
     setLogs(loadLocal(`ash-logs-${next}`, []))
-    setMeasurements(loadLocal(`ash-measurements-${next}`, next === 'ashay' ? [baseline] : []))
+    setMeasurements(loadLocal(`ash-measurements-${next}`, next === 'ashay' ? [baseline] : [kalyaniBaseline]))
     setOpenExercise(null)
   }
 
@@ -156,7 +195,7 @@ function App() {
           <button className={tab === 'progress' ? 'active' : ''} onClick={() => setTab('progress')}><BarChart3 /> Progress</button>
         </nav>
         <div className="profile-mini">
-          <button onClick={() => setShowProfile(!showProfile)}><CircleUserRound /><span><b>Ashay</b><small>{user ? 'Cloud synced' : 'Local mode'}</small></span><ChevronDown /></button>
+          <button onClick={() => setShowProfile(!showProfile)}><CircleUserRound /><span><b>{profile === 'ashay' ? 'Ashay' : 'Kalyani'}</b><small>{user ? 'Cloud synced' : 'Local mode'}</small></span><ChevronDown /></button>
           {showProfile && <div className="profile-popover">
             {user ? <><small>{user.email}</small><button onClick={() => supabase.auth.signOut()}><LogOut /> Sign out</button></> : <>
               <b>Sync across devices</b><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" /><button className="primary" onClick={magicLink}>Email me a link</button><small>{authMessage}</small>
@@ -167,10 +206,10 @@ function App() {
 
       <main>
         <header className="mobile-header"><button className="brand"><span>AS</span><b>ASHAY STRENGTH</b></button><button onClick={() => setShowProfile(!showProfile)}><CircleUserRound /></button></header>
-        <div className="person-switch" role="group" aria-label="Choose training profile"><Users/><button className={profile === 'ashay' ? 'active' : ''} onClick={() => switchProfile('ashay')}>Ashay</button><button className={profile === 'girlfriend' ? 'active' : ''} onClick={() => switchProfile('girlfriend')}>Girlfriend</button></div>
-        {profile === 'girlfriend' && <div className="profile-setup-note"><Sparkles/><p><b>Beginner profile is ready.</b> Her records are separate. The current exercise plan is only a preview until her details are added.</p></div>}
-        {tab === 'today' && <Today sessionKey={activeSession} setSessionKey={setActiveSession} logs={logs} addSet={addSet} openExercise={openExercise} setOpenExercise={setOpenExercise} />}
-        {tab === 'plan' && <Plan schedule={schedule} setSchedule={setSchedule} />}
+        <div className="person-switch" role="group" aria-label="Choose training profile"><Users/><button className={profile === 'ashay' ? 'active' : ''} onClick={() => switchProfile('ashay')}>Ashay</button><button className={profile === 'girlfriend' ? 'active' : ''} onClick={() => switchProfile('girlfriend')}>Kalyani</button></div>
+        {profile === 'girlfriend' && <div className="profile-setup-note"><Sparkles/><p><b>Kalyani’s beginner plan.</b> Stable machines, lower volume and back-supported movements. Stop any exercise that worsens her back pain.</p></div>}
+        {tab === 'today' && <Today profile={profile} sessions={sessions} sessionKey={activeSession} setSessionKey={setActiveSession} logs={logs} addSet={addSet} openExercise={openExercise} setOpenExercise={setOpenExercise} />}
+        {tab === 'plan' && <Plan profile={profile} sessions={sessions} schedule={schedule} setSchedule={setSchedule} />}
         {tab === 'progress' && <Progress profile={profile} totalVolume={totalVolume} logs={logs} strengthData={strengthData} bodyData={bodyData} measurements={measurements} setMeasurements={setMeasurements} user={user} />}
       </main>
 
@@ -183,15 +222,15 @@ function App() {
   )
 }
 
-function Today({ sessionKey, setSessionKey, logs, addSet, openExercise, setOpenExercise }: { sessionKey: string; setSessionKey: (s: string) => void; logs: SetLog[]; addSet: (e: string, w: number, r: number) => void; openExercise: string | null; setOpenExercise: (s: string | null) => void }) {
+function Today({ profile, sessions, sessionKey, setSessionKey, logs, addSet, openExercise, setOpenExercise }: { profile: Profile; sessions: SessionMap; sessionKey: string; setSessionKey: (s: string) => void; logs: SetLog[]; addSet: (e: string, w: number, r: number) => void; openExercise: string | null; setOpenExercise: (s: string | null) => void }) {
   const session = sessions[sessionKey]
   return <div className="page">
-    <div className="eyebrow">WEEK 1 · BUILD PHASE</div>
-    <div className="page-title"><div><h1>Train with intent.</h1><p>Log clean reps. Leave the gym ready to recover.</p></div><div className="readiness"><Flame /><span><small>READINESS</small><b>Good day</b></span></div></div>
+    <div className="eyebrow">WEEK 1 · {profile === 'ashay' ? 'BUILD PHASE' : 'FOUNDATION PHASE'}</div>
+    <div className="page-title"><div><h1>{profile === 'ashay' ? 'Train with intent.' : 'Start strong, Kalyani.'}</h1><p>{profile === 'ashay' ? 'Log clean reps. Leave the gym ready to recover.' : 'Learn each movement, use a comfortable range and progress gradually.'}</p></div><div className="readiness"><Flame /><span><small>READINESS</small><b>Good day</b></span></div></div>
     <div className="session-tabs">{Object.entries(sessions).map(([key, value]) => <button key={key} onClick={() => setSessionKey(key)} className={key === sessionKey ? 'active' : ''}>{value.label}</button>)}</div>
     <section className="workout-hero" style={{ '--session-color': session.color } as React.CSSProperties}>
-      <div><span className="workout-number">{Object.keys(sessions).indexOf(sessionKey) + 1}</span><div><small>TODAY'S SESSION</small><h2>{session.label}</h2><p>{session.focus} · 60-75 min</p></div></div>
-      <span className="status-pill"><Activity /> Sports-aware volume</span>
+      <div><span className="workout-number">{Object.keys(sessions).indexOf(sessionKey) + 1}</span><div><small>TODAY'S SESSION</small><h2>{session.label}</h2><p>{session.focus} · {profile === 'ashay' ? '60-75' : '45-60'} min</p></div></div>
+      <span className="status-pill"><Activity /> {profile === 'ashay' ? 'Sports-aware volume' : 'Beginner volume'}</span>
     </section>
     <details className="session-warmup"><summary><Flame/><span><b>5-8 minute session warm-up</b><small>Open before training</small></span><ChevronDown/></summary><div><ol><li>3-5 minutes easy bike, treadmill or rower. You should feel warmer, not tired.</li><li>Do 5-8 controlled bodyweight reps of today’s main movement pattern.</li><li>Use the exercise card’s ramp-up sets for the first compound exercise.</li><li>For later exercises, do one easy rehearsal set only when needed.</li></ol><p>Static stretching is optional. Do not turn the warm-up into a workout.</p></div></details>
     <div className="exercise-list">
@@ -200,7 +239,7 @@ function Today({ sessionKey, setSessionKey, logs, addSet, openExercise, setOpenE
         return <ExerciseCard key={exercise.name} exercise={exercise} index={index} previous={previous} expanded={openExercise === exercise.name} toggle={() => setOpenExercise(openExercise === exercise.name ? null : exercise.name)} addSet={addSet} />
       })}
     </div>
-    <div className="coach-note"><Sparkles /><div><b>Progression rule</b><p>Use a weight that makes the final reps challenging while your technique stays clean. When every set reaches the top of the rep range, add the smallest available load next time. Never force a rep after form breaks.</p></div></div>
+    <div className="coach-note"><Sparkles /><div><b>Progression rule</b><p>{profile === 'ashay' ? 'Use a weight that makes the final reps challenging while your technique stays clean. When every set reaches the top of the rep range, add the smallest available load next time. Never force a rep after form breaks.' : 'For the first two weeks, finish every set while she could still perform a few clean reps. When all sets feel controlled at the top of the rep range, add the smallest load. Stop for sharp, radiating or worsening back pain.'}</p></div></div>
     <div className="evidence-note"><b>How exercises were chosen</b><p>“S-tier” here means stable, comfortable, easy to progress and a strong target-muscle fit for you. It is not a universal scientific grade. Research finds similar average muscle growth from machines and free weights, so your better chest connection on machines is a valid preference.</p><div><a href="https://pubmed.ncbi.nlm.nih.gov/37582807/" target="_blank" rel="noreferrer">Machines vs free weights study <ExternalLink/></a><a href="https://rpstrength.com/blogs/articles/complete-hypertrophy-training-guide" target="_blank" rel="noreferrer">RP/Mike Israetel selection guide <ExternalLink/></a><a href="https://www.youtube.com/@JeffNippard" target="_blank" rel="noreferrer">Jeff Nippard <ExternalLink/></a><a href="https://www.youtube.com/@tyler-path" target="_blank" rel="noreferrer">Tyler Path <ExternalLink/></a></div></div>
   </div>
 }
@@ -326,17 +365,17 @@ function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: {
   </article>
 }
 
-function Plan({ schedule, setSchedule }: { schedule: Record<string, Day>; setSchedule: React.Dispatch<React.SetStateAction<Record<string, Day>>> }) {
+function Plan({ profile, sessions, schedule, setSchedule }: { profile: Profile; sessions: SessionMap; schedule: Record<string, Day>; setSchedule: React.Dispatch<React.SetStateAction<Record<string, Day>>> }) {
   const lowerDays = [schedule.lowerA, schedule.lowerB].map((d) => days.indexOf(d)).sort()
   const lowerGap = lowerDays[1] - lowerDays[0]
   return <div className="page">
     <div className="eyebrow">YOUR WEEK · FULLY FLEXIBLE</div><div className="page-title"><div><h1>Build around life.</h1><p>Choose any lifting days. Recovery guidance updates with you.</p></div></div>
-    <section className="week-grid">{days.map((day) => <div className="day-column" key={day}><h3>{day}</h3>{sports[day] && <div className="sport-card"><Activity />{sports[day]}</div>}{Object.entries(schedule).filter(([, d]) => d === day).map(([key]) => <div className="day-session" style={{ borderColor: sessions[key].color }} key={key}><b>{sessions[key].label}</b><small>{sessions[key].focus}</small></div>)}</div>)}</section>
+    <section className="week-grid">{days.map((day) => <div className="day-column" key={day}><h3>{day}</h3>{profile === 'ashay' && sports[day] && <div className="sport-card"><Activity />{sports[day]}</div>}{Object.entries(schedule).filter(([, d]) => d === day).map(([key]) => <div className="day-session" style={{ borderColor: sessions[key].color }} key={key}><b>{sessions[key].label}</b><small>{sessions[key].focus}</small></div>)}</div>)}</section>
     <section className="plan-grid">
       {Object.entries(sessions).map(([key, session]) => <article className="plan-card" key={key} style={{ '--session-color': session.color } as React.CSSProperties}><div><span></span><div><h3>{session.label}</h3><p>{session.focus} · {session.exercises.length} exercises</p></div></div><label>Training day<select value={schedule[key]} onChange={(e) => setSchedule((s) => ({ ...s, [key]: e.target.value as Day }))}>{days.map((day) => <option key={day}>{day}</option>)}</select></label></article>)}
     </section>
-    <section className={`recovery-check ${lowerGap < 2 ? 'warning' : ''}`}><Check /><div><b>{lowerGap < 2 ? 'Lower sessions are too close' : 'Recovery spacing looks workable'}</b><p>{lowerGap < 2 ? 'Separate Lower A and Lower B by at least one full day.' : 'Keep the hardest lower session at least 48 hours from tennis when possible. Friday Upper B is intentionally low-fatigue after badminton.'}</p></div></section>
-    <section className="profile-baseline"><div><small>PROGRAM INPUT</small><h2>Your January baseline</h2><p>The scan guides trend tracking, not exercise diagnosis. Balanced segmental lean mass does not suggest a corrective side bias.</p></div><div className="baseline-stats"><span><b>75.9</b>kg weight</span><span><b>21.1</b>% body fat</span><span><b>34.2</b>kg SMM</span><span><b>6</b>visceral level</span><span><b>174</b>cm corrected</span><span><b>30</b>years</span></div></section>
+    <section className={`recovery-check ${lowerGap < 2 ? 'warning' : ''}`}><Check /><div><b>{lowerGap < 2 ? 'Lower sessions are too close' : 'Recovery spacing looks workable'}</b><p>{lowerGap < 2 ? 'Separate Lower A and Lower B by at least one full day.' : profile === 'ashay' ? 'Keep the hardest lower session at least 48 hours from tennis when possible. Friday Upper B is intentionally low-fatigue after badminton.' : 'Keep at least one full day between lower sessions. As a beginner, Kalyani can start with three sessions per week and rotate the fourth into the next week if recovery is difficult.'}</p></div></section>
+    {profile === 'ashay' ? <section className="profile-baseline"><div><small>PROGRAM INPUT</small><h2>Your January baseline</h2><p>The scan guides trend tracking, not exercise diagnosis. Balanced segmental lean mass does not suggest a corrective side bias.</p></div><div className="baseline-stats"><span><b>75.9</b>kg weight</span><span><b>21.1</b>% body fat</span><span><b>34.2</b>kg SMM</span><span><b>6</b>visceral level</span><span><b>174</b>cm corrected</span><span><b>30</b>years</span></div></section> : <section className="profile-baseline"><div><small>KALYANI · PROGRAM INPUT</small><h2>Beginner baseline</h2><p>Born December 1995, currently age 30. Back pain is a programming constraint, not a diagnosis; stable supported exercises are prioritized.</p></div><div className="baseline-stats"><span><b>58</b>kg weight</span><span><b>38.1</b>% body fat</span><span><b>25.5</b>BMI</span><span><b>10</b>visceral level</span><span><b>150</b>cm height</span><span><b>30</b>years</span></div></section>}
   </div>
 }
 
@@ -346,17 +385,18 @@ function Progress({ profile, totalVolume, logs, strengthData, bodyData, measurem
   const [form, setForm] = useState<Measurement>({ ...latest, date: new Date().toISOString().slice(0, 10) })
   const [showForm, setShowForm] = useState(false)
   const best = logs.reduce((max, l) => Math.max(max, l.weight * (1 + l.reps / 30)), 0)
-  const exportJson = () => downloadFile(`${profile}-strength-data.json`, JSON.stringify({ exportedAt: new Date().toISOString(), profile, workoutSets: logs, measurements }, null, 2), 'application/json')
+  const exportName = profile === 'ashay' ? 'ashay' : 'kalyani'
+  const exportJson = () => downloadFile(`${exportName}-strength-data.json`, JSON.stringify({ exportedAt: new Date().toISOString(), profile: exportName, workoutSets: logs, measurements }, null, 2), 'application/json')
   const exportCsv = () => {
     const header = ['record_type', 'date', 'exercise', 'weight_kg', 'reps', 'waist_cm', 'chest_cm', 'arm_cm', 'thigh_cm', 'hip_cm', 'neck_cm']
     const setRows = logs.map((log) => ['workout_set', log.date, log.exercise, log.weight, log.reps, '', '', '', '', '', ''])
     const measurementRows = measurements.map((m) => ['measurement', m.date, '', m.weight, '', m.waist, m.chest, m.arm, m.thigh, m.hip, m.neck])
-    downloadFile(`${profile}-strength-data.csv`, `\uFEFF${[header, ...setRows, ...measurementRows].map((row) => row.map(csvCell).join(',')).join('\r\n')}`, 'text/csv;charset=utf-8')
+    downloadFile(`${exportName}-strength-data.csv`, `\uFEFF${[header, ...setRows, ...measurementRows].map((row) => row.map(csvCell).join(',')).join('\r\n')}`, 'text/csv;charset=utf-8')
   }
   return <div className="page">
-    <div className="eyebrow">PERFORMANCE · {profile.toUpperCase()} · ALL TIME</div><div className="page-title"><div><h1>Proof, not guesses.</h1><p>Strength, consistency and body trends in one view.</p></div><div className="progress-actions"><button onClick={exportJson}><FileJson/>JSON</button><button onClick={exportCsv}><FileSpreadsheet/>Excel CSV</button><button className="primary" onClick={() => { setForm({ ...latest, date: new Date().toISOString().slice(0, 10) }); setShowForm(!showForm) }}><Plus /> New measurement</button></div></div>
+    <div className="eyebrow">PERFORMANCE · {profile === 'ashay' ? 'ASHAY' : 'KALYANI'} · ALL TIME</div><div className="page-title"><div><h1>Proof, not guesses.</h1><p>Strength, consistency and body trends in one view.</p></div><div className="progress-actions"><button onClick={exportJson}><FileJson/>JSON</button><button onClick={exportCsv}><FileSpreadsheet/>Excel CSV</button><button className="primary" onClick={() => { setForm({ ...latest, date: new Date().toISOString().slice(0, 10) }); setShowForm(!showForm) }}><Plus /> New measurement</button></div></div>
     {showForm && <MeasurementForm form={form} setForm={setForm} save={() => { setMeasurements((m) => [...m, form]); if (user) void supabase.from('measurements').insert({ user_id: user.id, profile, measured_at: form.date, weight_kg: form.weight, waist_cm: form.waist || null, chest_cm: form.chest || null, arm_cm: form.arm || null, thigh_cm: form.thigh || null, hip_cm: form.hip || null, neck_cm: form.neck || null }); setShowForm(false) }} />}
-    <section className="metric-grid"><div><TrendingUp /><small>EST. 1RM BEST</small><b>{best ? `${Math.round(best)} kg` : 'Start logging'}</b><p>Calculated from your sets</p></div><div><Dumbbell /><small>TOTAL VOLUME</small><b>{totalVolume ? `${Math.round(totalVolume).toLocaleString()} kg` : '0 kg'}</b><p>{logs.length} sets logged</p></div><div><Medal /><small>CONSISTENCY</small><b>{logs.length ? 'On track' : 'Not started'}</b><p>Based on logged sessions</p></div><div><Scale /><small>BODYWEIGHT</small><b>{latest.weight ? `${latest.weight} kg` : 'Add first entry'}</b><p>{profile === 'ashay' ? 'InBody baseline: 75.9 kg' : 'No baseline yet'}</p></div></section>
+    <section className="metric-grid"><div><TrendingUp /><small>EST. 1RM BEST</small><b>{best ? `${Math.round(best)} kg` : 'Start logging'}</b><p>Calculated from your sets</p></div><div><Dumbbell /><small>TOTAL VOLUME</small><b>{totalVolume ? `${Math.round(totalVolume).toLocaleString()} kg` : '0 kg'}</b><p>{logs.length} sets logged</p></div><div><Medal /><small>CONSISTENCY</small><b>{logs.length ? 'On track' : 'Not started'}</b><p>Based on logged sessions</p></div><div><Scale /><small>BODYWEIGHT</small><b>{latest.weight ? `${latest.weight} kg` : 'Add first entry'}</b><p>{profile === 'ashay' ? 'InBody baseline: 75.9 kg' : 'Kalyani baseline: 58 kg'}</p></div></section>
     <section className="chart-grid"><article className="chart-card wide"><div><span><small>STRENGTH TREND</small><h2>Estimated 1RM</h2></span><span className="trend"><ArrowUpRight /> Double progression</span></div><ResponsiveContainer width="100%" height={280}><AreaChart data={strengthData}><defs><linearGradient id="strength" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#d9ff59" stopOpacity={0.5}/><stop offset="95%" stopColor="#d9ff59" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2c"/><XAxis dataKey="week" stroke="#777"/><YAxis stroke="#777" domain={['dataMin - 5', 'dataMax + 5']}/><Tooltip contentStyle={{ background: '#191919', border: '1px solid #333' }}/><Area type="monotone" dataKey="e1rm" stroke="#d9ff59" strokeWidth={3} fill="url(#strength)"/></AreaChart></ResponsiveContainer></article>
     <article className="chart-card"><div><span><small>BODY TREND</small><h2>Weight</h2></span></div><ResponsiveContainer width="100%" height={280}><LineChart data={bodyData}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2c"/><XAxis dataKey="date" stroke="#777"/><YAxis stroke="#777" domain={['dataMin - 2', 'dataMax + 2']}/><Tooltip contentStyle={{ background: '#191919', border: '1px solid #333' }}/><Line type="monotone" dataKey="weight" stroke="#75d7ff" strokeWidth={3} dot={{ fill: '#75d7ff' }}/></LineChart></ResponsiveContainer></article></section>
     <section className="measure-table"><div><h2>Latest measurements</h2><button onClick={() => { setForm({ ...latest, date: new Date().toISOString().slice(0, 10) }); setShowForm(true) }}>Add entry <Plus /></button></div><div className="measurement-grid">{(['waist', 'chest', 'arm', 'thigh', 'hip', 'neck'] as const).map((key) => <span key={key}><small>{key}</small><b>{latest[key] || '—'} {latest[key] ? 'cm' : ''}</b></span>)}</div></section>
