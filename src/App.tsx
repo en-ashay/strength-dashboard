@@ -28,7 +28,7 @@ type SessionMap = Record<string, { label: string; focus: string; color: string; 
 
 const ashaySessions: SessionMap = {
   lowerA: { label: 'Lower A', focus: 'Quad + strength', color: '#d9ff59', exercises: [
-    { name: 'Machine Squat', sets: 3, reps: '6-10', rest: '3 min', why: 'Stable, deep knee flexion and easy progression without needing barbell-squat skill.', subs: ['Hack squat', 'Leg press'] },
+    { name: 'Machine Squat', sets: 3, reps: '6-10', rest: '3 min', why: 'Stable, deep knee flexion and easy progression without needing barbell-squat skill. A barbell squat is also effective if you enjoy it and can perform it consistently.', subs: ['Barbell Back Squat', 'Leg press'] },
     { name: 'Romanian Deadlift', sets: 3, reps: '6-10', rest: '3 min', why: 'High-tension hip hinge through a long hamstring length.', subs: ['45 degree hyperextension', 'DB Romanian deadlift'] },
     { name: 'Leg Extension', sets: 2, reps: '10-15', rest: '90 sec', why: 'Direct rectus femoris and quad work without more whole-body fatigue.', subs: ['Sissy squat', 'Reverse Nordic'] },
     { name: 'Seated Leg Curl', sets: 2, reps: '10-15', rest: '90 sec', why: 'Trains knee flexion with hamstrings at a long muscle length.', subs: ['Lying leg curl', 'Nordic curl'] },
@@ -279,6 +279,7 @@ function Today({ profile, sessions, sessionKey, setSessionKey, logs, addSet, ope
 
 function exerciseSteps(name: string): string[] {
   const n = name.toLowerCase()
+  if (n.includes('barbell') && n.includes('squat')) return ['Set the bar across your upper traps or rear delts, grip it firmly, step out and place feet around shoulder width.', 'Inhale and brace before descending; sit between your hips while keeping the whole foot planted and knees tracking over toes.', 'Reach your deepest controlled position, then drive the floor away while your hips and chest rise together. Re-brace at the top.']
   if (n.includes('squat') || n.includes('leg press')) return ['Set feet around shoulder width and keep your whole foot planted.', 'Brace your trunk, lower as deep as you can without your pelvis rolling off the pad.', 'Drive through the mid-foot; keep knees tracking in line with your toes.']
   if (n.includes('romanian') || n.includes('hyperextension') || n.includes('pull-through') || n.includes('hip thrust')) return ['Set a neutral spine and brace before moving.', 'Push your hips back until you feel the hamstrings or glutes stretch.', 'Drive the hips forward without leaning back or overextending your spine.']
   if (n.includes('leg extension')) return ['Align your knee with the machine pivot and place the pad above your ankle.', 'Hold the handles and extend your knees without lifting your hips.', 'Squeeze the quads briefly, then lower under control.']
@@ -360,6 +361,7 @@ function warmupFor(name: string, workingWeight: number): string[] {
 function videoFor(name: string): { url: string; label: string } {
   const n = name.toLowerCase()
   const exact: [string, string, string][] = [
+    ['barbell back squat', 'https://www.youtube.com/watch?v=bEv6CCg2BC8', 'Jeff squat technique'],
     ['machine squat', 'https://youtu.be/N56STpGGRYE', 'Jeff PDF demo'],
     ['romanian deadlift', 'https://youtu.be/_oyxCn2iSjU?t=95', 'Jeff PDF technique'],
     ['leg extension', 'https://youtu.be/ljO4jkwv8wQ?t=202', 'Jeff PDF technique'],
@@ -384,6 +386,16 @@ function videoFor(name: string): { url: string; label: string } {
   return match ? { url: match[1], label: match[2] } : { url: `https://www.youtube.com/results?search_query=${encodeURIComponent(`Jeff Nippard ${name} technique`)}`, label: 'Find a Jeff demo' }
 }
 
+function youtubeThumbnail(url: string) {
+  try {
+    const parsed = new URL(url)
+    const id = parsed.hostname.includes('youtu.be') ? parsed.pathname.slice(1) : parsed.searchParams.get('v')
+    return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null
+  } catch {
+    return null
+  }
+}
+
 function MuscleMap({ target }: { target: { primary: Muscle[]; secondary: Muscle[] } }) {
   const tone = (muscle: Muscle) => target.primary.includes(muscle) ? 'primary-muscle' : target.secondary.includes(muscle) ? 'secondary-muscle' : 'inactive-muscle'
   return <div className="muscle-map"><svg viewBox="0 0 300 300" role="img" aria-label="Front and back body muscle map">
@@ -402,6 +414,7 @@ function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: {
   const steps = exerciseSteps(sub)
   const target = targetMuscles(sub)
   const video = videoFor(sub)
+  const thumbnail = youtubeThumbnail(video.url)
   return <article className={`exercise-card ${expanded ? 'expanded' : ''}`}>
     <button className="exercise-summary" onClick={toggle}>
       <span className="exercise-index">{String(index + 1).padStart(2, '0')}</span><div><h3>{sub}</h3><p>{exercise.sets} sets · {exercise.reps} reps · {exercise.rest} rest</p><small className="sub-hint">{expanded ? 'Choose below' : '2 substitutes · muscles · steps · breathing'}</small></div>
@@ -412,7 +425,7 @@ function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: {
       <label>Exercise or substitute<select value={sub} onChange={(e) => setSub(e.target.value)}><option>{exercise.name}</option>{exercise.subs.map((s) => <option key={s}>{s}</option>)}</select></label>
       <div className="detail-tabs"><button className={detailView === 'target' ? 'active' : ''} onClick={() => setDetailView('target')}>Target</button><button className={detailView === 'instructions' ? 'active' : ''} onClick={() => setDetailView('instructions')}>Instructions</button><button className={detailView === 'warmup' ? 'active' : ''} onClick={() => setDetailView('warmup')}>Warm-up</button></div>
       {detailView === 'target' && <MuscleMap target={target}/>}
-      {detailView === 'instructions' && <div className="how-to"><div className="how-to-heading"><b>How to do {sub}</b><a href={video.url} target="_blank" rel="noreferrer">{video.label}<ExternalLink/></a></div><ol>{steps.map((step) => <li key={step}>{step}</li>)}</ol><div className="breathing"><Wind/><p><b>Breathing:</b> {breathingFor(sub)}</p></div></div>}
+      {detailView === 'instructions' && <div className="how-to">{thumbnail && <a className="demo-image" href={video.url} target="_blank" rel="noreferrer"><img src={thumbnail} alt={`${sub} video demonstration`} loading="lazy"/><span>Watch visual demonstration <ExternalLink/></span></a>}<div className="how-to-heading"><b>How to do {sub}</b><a href={video.url} target="_blank" rel="noreferrer">{video.label}<ExternalLink/></a></div><ol>{steps.map((step) => <li key={step}>{step}</li>)}</ol><div className="breathing"><Wind/><p><b>Breathing:</b> {breathingFor(sub)}</p></div></div>}
       {detailView === 'warmup' && <div className="how-to"><b>Ramp up, do not tire yourself</b><ol>{warmupFor(sub, weight).map((step) => <li key={step}>{step}</li>)}</ol><p className="warmup-note">Warm-up sets do not count toward the listed working sets. Later isolation exercises usually need only one easy set.</p></div>}
       <div className="set-entry no-rir"><label>Weight <span><input type="number" min="0" step="0.5" value={weight} onChange={(e) => setWeight(Number(e.target.value))} /> kg</span></label><label>Reps <input type="number" min="1" value={reps} onChange={(e) => setReps(Number(e.target.value))} /></label><button className="primary" onClick={() => addSet(sub, weight, reps)}><Plus /> Log set</button></div>
     </div>}
