@@ -304,22 +304,22 @@ function exerciseSteps(name: string): string[] {
 
 function breathingFor(name: string): string {
   const n = name.toLowerCase()
-  if (n.includes('squat')) return 'At the top, inhale into your abdomen and brace as if preparing for a punch. Keep that pressure while descending and through the bottom. Exhale gradually after passing the hardest part on the way up, then reset at the top.'
-  if (n.includes('leg press')) return 'Inhale and brace before lowering the platform. Keep your back against the pad and hold steady pressure at the bottom. Exhale as you push through the hardest part; do not let your lower back round.'
-  if (n.includes('romanian') || n.includes('hyperextension') || n.includes('pull-through') || n.includes('hip thrust') || n.includes('glute bridge')) return 'Inhale and brace before the hinge or lowering phase. Keep your ribs stacked over your pelvis. Exhale as you drive the hips through, without leaning back at the finish.'
-  if (n.includes('split squat') || n.includes('lunge') || n.includes('step-up')) return 'Inhale and brace before lowering. Keep steady trunk pressure at the bottom, then exhale as the working leg drives you up.'
-  if (n.includes('press') && !n.includes('pressdown')) return 'Inhale while lowering the handles or weight toward you. Keep your torso braced, then exhale as you press through the hardest part.'
-  if ((n.includes('pec deck') && !n.includes('reverse')) || n.includes('fly')) return 'Inhale as the arms open into the chest stretch. Exhale while bringing the upper arms together and squeezing the pecs.'
-  if (n.includes('pulldown') || n.includes('pull-up') || n.includes('chin-up') || n.includes('row')) return 'Inhale as the arms lengthen. Exhale while driving the elbows down or back, without losing your braced torso position.'
-  if (n.includes('reverse nordic')) return 'Inhale and brace as the straight body leans backward. Exhale while the quadriceps pull you upright.'
-  if (n.includes('leg curl') || n.includes('nordic')) return 'Inhale as the knees straighten. Exhale while bending the knees and squeezing the hamstrings.'
-  if (n.includes('leg extension')) return 'Inhale while lowering the pad. Exhale while straightening the knees and squeezing the quads.'
-  if (n.includes('calf')) return 'Inhale while lowering into the calf stretch. Exhale as you rise onto your toes and pause at the top.'
-  if (n.includes('adduction') || n.includes('abduction') || n.includes('lateral raise') || n.includes('reverse pec') || n.includes('rear-delt')) return 'Inhale on the controlled return. Exhale while moving the pads, arms, or legs into the working position.'
-  if (n.includes('triceps') || n.includes('pressdown') || n.includes('skull') || n.includes('french')) return 'Inhale while bending the elbows. Exhale while straightening them and squeezing the triceps.'
-  if (n.includes('biceps') || n.includes('curl')) return 'Inhale while lowering to the stretch. Exhale while curling and squeezing the biceps.'
-  if (n.includes('crunch') || n.includes('dead bug') || n.includes('bird dog') || n.includes('pallof')) return 'Exhale gently as you perform the working movement and tighten the abdomen. Inhale during the controlled return without letting the lower back arch.'
-  return 'Inhale during the controlled lowering phase and exhale during the lifting phase. Keep your torso gently braced throughout.'
+  if (n.includes('squat')) return 'Before: take a deep breath into your belly and tighten your stomach like someone is about to punch it. Down: keep that breath and tightness as you squat. Up: start standing, then slowly breathe out after you pass the hardest point. Reset at the top.'
+  if (n.includes('leg press')) return 'Before: breathe into your belly and tighten your stomach. Lower: keep the breath while the platform comes toward you and keep your back on the pad. Push: breathe out slowly after the platform starts moving away.'
+  if (n.includes('romanian') || n.includes('hyperextension') || n.includes('pull-through') || n.includes('hip thrust') || n.includes('glute bridge')) return 'Before: breathe into your belly and tighten your stomach. Lower or hinge: keep your body tight. Lift: breathe out as you push your hips forward. Finish tall without leaning backward.'
+  if (n.includes('split squat') || n.includes('lunge') || n.includes('step-up')) return 'Before: breathe in and tighten your stomach. Lower: keep your breath and balance. Rise: breathe out while pushing through the working leg.'
+  if (n.includes('press') && !n.includes('pressdown')) return 'Lower: breathe in as the handles or weight move toward you. Press: breathe out as you push them away. Keep your stomach gently tight throughout.'
+  if ((n.includes('pec deck') && !n.includes('reverse')) || n.includes('fly')) return 'Open: breathe in as your arms move apart and your chest stretches. Close: breathe out as you bring your upper arms together and squeeze your chest.'
+  if (n.includes('pulldown') || n.includes('pull-up') || n.includes('chin-up') || n.includes('row')) return 'Return: breathe in as your arms straighten. Pull: breathe out as your elbows move down or backward. Keep your chest and stomach steady.'
+  if (n.includes('reverse nordic')) return 'Lean back: breathe in and tighten your stomach. Return upright: breathe out while your thighs pull you forward.'
+  if (n.includes('leg curl') || n.includes('nordic')) return 'Straighten: breathe in as your knees open. Curl: breathe out as you bend your knees and squeeze the back of your thighs.'
+  if (n.includes('leg extension')) return 'Lower: breathe in as your knees bend. Lift: breathe out as you straighten your knees and squeeze the front of your thighs.'
+  if (n.includes('calf')) return 'Lower: breathe in as your heels drop into the stretch. Rise: breathe out as you push onto your toes.'
+  if (n.includes('adduction') || n.includes('abduction') || n.includes('lateral raise') || n.includes('reverse pec') || n.includes('rear-delt')) return 'Return: breathe in as the weight comes back. Work: breathe out as you move the pads, arms or legs outward or inward.'
+  if (n.includes('triceps') || n.includes('pressdown') || n.includes('skull') || n.includes('french')) return 'Bend: breathe in as your elbows bend. Straighten: breathe out as you extend your elbows and squeeze your triceps.'
+  if (n.includes('biceps') || n.includes('curl')) return 'Lower: breathe in as your arms straighten. Curl: breathe out as you lift and squeeze your biceps.'
+  if (n.includes('crunch') || n.includes('dead bug') || n.includes('bird dog') || n.includes('pallof')) return 'Work: breathe out slowly and tighten your stomach as you move. Return: breathe in without letting your lower back arch.'
+  return 'Easy rule: breathe in while the weight lowers, and breathe out while you lift or push the weight. Keep your stomach gently tight.'
 }
 
 type Muscle =
