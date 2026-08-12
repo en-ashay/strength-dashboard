@@ -265,16 +265,28 @@ function Today({ profile, sessions, sessionKey, setSessionKey, logs, addSet, ope
       <div><span className="workout-number">{Object.keys(sessions).indexOf(sessionKey) + 1}</span><div><small>TODAY'S SESSION</small><h2>{session.label}</h2><p>{session.focus} · {profile === 'ashay' ? '60-75' : '45-60'} min</p></div></div>
       <span className="status-pill"><Activity /> {profile === 'ashay' ? 'Sports-aware volume' : 'Beginner volume'}</span>
     </section>
-    <details className="session-warmup"><summary><Flame/><span><b>5-8 minute session warm-up</b><small>Open before training</small></span><ChevronDown/></summary><div><ol><li>3-5 minutes easy bike, treadmill or rower. You should feel warmer, not tired.</li><li>Do 5-8 controlled bodyweight reps of today’s main movement pattern.</li><li>Use the exercise card’s ramp-up sets for the first compound exercise.</li><li>For later exercises, do one easy rehearsal set only when needed.</li></ol><p>Static stretching is optional. Do not turn the warm-up into a workout.</p></div></details>
+    <SessionWarmup profile={profile} sessionKey={sessionKey}/>
     <div className="exercise-list">
       {session.exercises.map((exercise, index) => {
         const previous = [...logs].reverse().find((l) => l.exercise === exercise.name)
-        return <ExerciseCard key={exercise.name} exercise={exercise} index={index} previous={previous} expanded={openExercise === exercise.name} toggle={() => setOpenExercise(openExercise === exercise.name ? null : exercise.name)} addSet={addSet} />
+        return <ExerciseCard key={exercise.name} profile={profile} exercise={exercise} index={index} previous={previous} expanded={openExercise === exercise.name} toggle={() => setOpenExercise(openExercise === exercise.name ? null : exercise.name)} addSet={addSet} />
       })}
     </div>
     <div className="coach-note"><Sparkles /><div><b>Progression rule</b><p>{profile === 'ashay' ? 'Use a weight that makes the final reps challenging while your technique stays clean. When every set reaches the top of the rep range, add the smallest available load next time. Never force a rep after form breaks.' : 'For the first two weeks, finish every set while she could still perform a few clean reps. When all sets feel controlled at the top of the rep range, add the smallest load. Stop for sharp, radiating or worsening back pain.'}</p></div></div>
     <div className="evidence-note"><b>How exercises were chosen</b><p>“S-tier” here means stable, comfortable, easy to progress and a strong target-muscle fit for you. It is not a universal scientific grade. Research finds similar average muscle growth from machines and free weights, so your better chest connection on machines is a valid preference.</p><div><a href="https://pubmed.ncbi.nlm.nih.gov/37582807/" target="_blank" rel="noreferrer">Machines vs free weights study <ExternalLink/></a><a href="https://rpstrength.com/blogs/articles/complete-hypertrophy-training-guide" target="_blank" rel="noreferrer">RP/Mike Israetel selection guide <ExternalLink/></a><a href="https://www.youtube.com/@JeffNippard" target="_blank" rel="noreferrer">Jeff Nippard <ExternalLink/></a><a href="https://www.youtube.com/@tyler-path" target="_blank" rel="noreferrer">Tyler Path <ExternalLink/></a></div></div>
   </div>
+}
+
+function SessionWarmup({ profile, sessionKey }: { profile: Profile; sessionKey: string }) {
+  const lower = sessionKey.startsWith('lower')
+  const steps = profile === 'ashay'
+    ? lower
+      ? ['3-5 minutes of easy cycling or incline walking.', '8 ankle rocks per side, keeping the heel down.', '8 slow bodyweight squats to today’s comfortable depth.', '8 unloaded hip hinges with hands on hips.', 'Start the first exercise’s ramp-up sets shown in its Warm-up tab.']
+      : ['3-5 minutes of easy rowing, cycling or walking.', '8 slow arm circles in each direction.', '8 scapular wall slides or very light band pull-aparts.', '8 controlled push-ups against a wall or bench.', 'Start the first exercise’s ramp-up sets shown in its Warm-up tab.']
+    : lower
+      ? ['5 minutes of easy walking or recumbent cycling. She should be able to speak normally.', 'Check the back: note the starting discomfort from 0-10. Do not continue if pain is sharp or radiating.', '6 gentle pelvic tilts or dead bugs per side, using only a comfortable range.', '6 sit-to-stands from a bench, then 6 unloaded hip hinges with a dowel or hands on hips.', 'Do the first exercise’s light practice sets. The warm-up should leave her more comfortable, not tired.']
+      : ['5 minutes of easy walking or cycling.', 'Check the back and shoulders before loading. Stop for sharp, radiating or increasing pain.', '8 gentle shoulder rolls each way and 8 wall slides.', '8 very light cable or band rows, then 8 wall push-ups.', 'Do the first exercise’s light practice sets, focusing on machine setup and control.']
+  return <details className="session-warmup"><summary><Flame/><span><b>{profile === 'ashay' ? '5-8' : '8-10'} minute {lower ? 'lower-body' : 'upper-body'} warm-up</b><small>Open before training</small></span><ChevronDown/></summary><div><ol>{steps.map((step) => <li key={step}>{step}</li>)}</ol><p>No long static stretching is required. Warm up until movement feels smooth; do not turn preparation into another workout.</p></div></details>
 }
 
 function exerciseSteps(name: string): string[] {
@@ -363,19 +375,18 @@ function targetMuscles(name: string): { primary: Muscle[]; secondary: Muscle[] }
   return { primary: [], secondary: [] }
 }
 
-function warmupFor(name: string, workingWeight: number): string[] {
+function warmupFor(name: string, workingWeight: number, profile: Profile, index: number): { title: string; steps: string[]; note: string } {
   const n = name.toLowerCase()
   const compound = n.includes('squat') || n.includes('leg press') || n.includes('romanian') || n.includes('press') || n.includes('pulldown') || n.includes('pull-up') || n.includes('row') || n.includes('split squat')
-  if (compound) return [
-    `Easy set: ${workingWeight ? `${Math.round(workingWeight * .45)} kg` : 'about 45% of working weight'} × 8-10 reps.`,
-    `Ramp set: ${workingWeight ? `${Math.round(workingWeight * .65)} kg` : 'about 65%'} × 5-6 reps.`,
-    `Primer set: ${workingWeight ? `${Math.round(workingWeight * .8)} kg` : 'about 80%'} × 2-3 reps, then rest 2 minutes.`,
-  ]
-  return [
-    'One easy set at about half your working weight for 10-12 controlled reps.',
-    'Check the machine adjustment and rehearse the full comfortable range.',
-    'Start working sets when the target muscle feels warm, not tired.',
-  ]
+  const load = (fraction: number, fallback: string) => workingWeight ? `${Math.max(1, Math.round(workingWeight * fraction))} kg` : fallback
+  if (profile === 'girlfriend') {
+    if (index === 0) return { title: 'Kalyani: technique-first ramp', steps: ['Practice the machine or movement with no load or the lightest setting for 8 slow reps.', `Do ${load(.55, 'a very light load')} × 6 reps. Check that her back feels the same or better.`, `Do ${load(.75, 'a moderate practice load')} × 3 reps only if technique is steady, then rest 90 seconds.`, 'Begin the working sets. During her first two weeks, it is fine to repeat the light practice set instead of adding weight.'], note: 'A warm-up set should feel easy. Stop if discomfort increases from its starting level, spreads down a leg, or causes numbness or weakness.' }
+    if (compound) return { title: 'Kalyani: one short practice set', steps: [`Use ${load(.5, 'about half the planned load')} for 6-8 slow reps.`, 'Adjust the seat, pads and range before adding weight.', 'Rest 60-90 seconds, then begin only if the movement is comfortable.'], note: 'If the same muscles are already warm, one practice set is enough. More warm-up is not always better.' }
+    return { title: 'Kalyani: optional rehearsal', steps: ['Use the lightest setting for 8-10 controlled reps.', 'Learn the machine path and confirm a comfortable range.', 'If the target muscle is already warm and setup is familiar, this set may be skipped.'], note: 'Practice, do not fatigue. The listed working sets begin afterward.' }
+  }
+  if (index === 0) return { title: 'Ashay: full ramp for the first lift', steps: [`Easy set: ${load(.45, 'about 45% of working weight')} × 8-10 reps.`, `Ramp set: ${load(.65, 'about 65%')} × 5-6 reps.`, `Primer set: ${load(.8, 'about 80%')} × 2-3 reps.`, 'Rest about 2 minutes, then begin the working sets.'], note: 'Every ramp should feel crisp. None should approach failure or count as a working set.' }
+  if (compound) return { title: 'Ashay: abbreviated ramp', steps: [`Use ${load(.5, 'about 50% of working weight')} × 6-8 reps.`, `If the movement or angle is different, use ${load(.75, 'about 75%')} × 2-3 reps.`, 'Rest 60-90 seconds, then begin the working sets.'], note: 'Skip the second ramp if the same pattern and muscles are already thoroughly warm.' }
+  return { title: 'Ashay: optional isolation rehearsal', steps: [`Use ${load(.5, 'about half the working weight')} × 8-10 controlled reps.`, 'Confirm the machine adjustment and full comfortable range.', 'Begin working sets once you feel the target muscle, not fatigue.'], note: 'This rehearsal can be skipped when the muscle is already warm and the setup is familiar.' }
 }
 
 function videoFor(name: string): { url: string; label: string } {
@@ -450,7 +461,7 @@ function MuscleMap({ target }: { target: { primary: Muscle[]; secondary: Muscle[
   </svg><div className="muscle-legend"><span><i className="legend-primary"/><b>Primary</b>{target.primary.join(', ') || 'General movement'}</span><span><i className="legend-secondary"/><b>Supporting</b>{target.secondary.join(', ') || 'None highlighted'}</span><small>Highlights show the main muscles trained, not every stabilizer active during the exercise.</small></div></div>
 }
 
-function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: { exercise: Exercise; index: number; previous?: SetLog; expanded: boolean; toggle: () => void; addSet: (e: string, w: number, r: number) => void }) {
+function ExerciseCard({ profile, exercise, index, previous, expanded, toggle, addSet }: { profile: Profile; exercise: Exercise; index: number; previous?: SetLog; expanded: boolean; toggle: () => void; addSet: (e: string, w: number, r: number) => void }) {
   const [weight, setWeight] = useState(previous?.weight || 0)
   const [reps, setReps] = useState(previous?.reps || Number(exercise.reps.split('-')[0]))
   const [sub, setSub] = useState(exercise.name)
@@ -459,6 +470,7 @@ function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: {
   const target = targetMuscles(sub)
   const video = videoFor(sub)
   const thumbnail = youtubeThumbnail(video.url)
+  const warmup = warmupFor(sub, weight, profile, index)
   return <article className={`exercise-card ${expanded ? 'expanded' : ''}`}>
     <button className="exercise-summary" onClick={toggle}>
       <span className="exercise-index">{String(index + 1).padStart(2, '0')}</span><div><h3>{sub}</h3><p>{exercise.sets} sets · {exercise.reps} reps · {exercise.rest} rest</p><small className="sub-hint">{expanded ? 'Choose below' : '2 substitutes · muscles · steps · breathing'}</small></div>
@@ -470,7 +482,7 @@ function ExerciseCard({ exercise, index, previous, expanded, toggle, addSet }: {
       <div className="detail-tabs"><button className={detailView === 'target' ? 'active' : ''} onClick={() => setDetailView('target')}>Target</button><button className={detailView === 'instructions' ? 'active' : ''} onClick={() => setDetailView('instructions')}>Instructions</button><button className={detailView === 'warmup' ? 'active' : ''} onClick={() => setDetailView('warmup')}>Warm-up</button></div>
       {detailView === 'target' && <MuscleMap target={target}/>}
       {detailView === 'instructions' && <div className="how-to">{thumbnail && <a className="demo-image" href={video.url} target="_blank" rel="noreferrer"><img src={thumbnail} alt={`${sub} video demonstration`} loading="lazy"/><span>Watch visual demonstration <ExternalLink/></span></a>}<div className="how-to-heading"><b>How to do {sub}</b><a href={video.url} target="_blank" rel="noreferrer">{video.label}<ExternalLink/></a></div><ol>{steps.map((step) => <li key={step}>{step}</li>)}</ol><div className="breathing"><Wind/><p><b>Breathing:</b> {breathingFor(sub)}</p></div></div>}
-      {detailView === 'warmup' && <div className="how-to"><b>Ramp up, do not tire yourself</b><ol>{warmupFor(sub, weight).map((step) => <li key={step}>{step}</li>)}</ol><p className="warmup-note">Warm-up sets do not count toward the listed working sets. Later isolation exercises usually need only one easy set.</p></div>}
+      {detailView === 'warmup' && <div className="how-to"><b>{warmup.title}</b><ol>{warmup.steps.map((step) => <li key={step}>{step}</li>)}</ol><p className="warmup-note">{warmup.note}</p></div>}
       <div className="set-entry no-rir"><label>Weight <span><input type="number" min="0" step="0.5" value={weight} onChange={(e) => setWeight(Number(e.target.value))} /> kg</span></label><label>Reps <input type="number" min="1" value={reps} onChange={(e) => setReps(Number(e.target.value))} /></label><button className="primary" onClick={() => addSet(sub, weight, reps)}><Plus /> Log set</button></div>
     </div>}
   </article>
