@@ -207,10 +207,12 @@ function App() {
     setAuthMessage(error ? error.message : 'Check your inbox for the secure sign-in link.')
   }
 
-  function addSet(exercise: string, weight: number, reps: number) {
+  async function addSet(exercise: string, weight: number, reps: number): Promise<{ ok: boolean; message: string }> {
     const entry = { exercise, weight, reps, date: new Date().toISOString() }
     setLogs((current) => [...current, entry])
-    if (user) void supabase.from('workout_sets').insert({ user_id: user.id, profile, session_name: session.label, exercise, weight_kg: weight, reps, rir: 2, performed_at: entry.date })
+    if (!user) return { ok: true, message: 'Set logged locally.' }
+    const { error } = await supabase.from('workout_sets').insert({ user_id: user.id, profile, session_name: session.label, exercise, weight_kg: weight, reps, rir: 2, performed_at: entry.date })
+    return error ? { ok: true, message: 'Set logged locally. Cloud sync failed.' } : { ok: true, message: 'Set logged and synced.' }
   }
 
   function switchProfile(next: Profile) {
@@ -264,7 +266,7 @@ function App() {
   )
 }
 
-function Today({ profile, sessions, sessionKey, setSessionKey, logs, addSet, openExercise, setOpenExercise, videoLinks }: { profile: Profile; sessions: SessionMap; sessionKey: string; setSessionKey: (s: string) => void; logs: SetLog[]; addSet: (e: string, w: number, r: number) => void; openExercise: string | null; setOpenExercise: (s: string | null) => void; videoLinks: VideoLink[] }) {
+function Today({ profile, sessions, sessionKey, setSessionKey, logs, addSet, openExercise, setOpenExercise, videoLinks }: { profile: Profile; sessions: SessionMap; sessionKey: string; setSessionKey: (s: string) => void; logs: SetLog[]; addSet: (e: string, w: number, r: number) => Promise<{ ok: boolean; message: string }>; openExercise: string | null; setOpenExercise: (s: string | null) => void; videoLinks: VideoLink[] }) {
   const session = sessions[sessionKey]
   return <div className="page">
     <div className="eyebrow">WEEK 1 · {profile === 'ashay' ? 'BUILD PHASE' : 'FOUNDATION PHASE'}</div>
@@ -447,16 +449,17 @@ function MuscleMap({ target }: { target: { primary: Muscle[]; secondary: Muscle[
   </svg><div className="muscle-legend"><span><i className="legend-primary"/><b>Primary</b>{target.primary.join(', ') || 'General movement'}</span><span><i className="legend-secondary"/><b>Supporting</b>{target.secondary.join(', ') || 'None highlighted'}</span><small>Highlights show the main muscles trained, not every stabilizer active during the exercise.</small></div></div>
 }
 
-function ExerciseCard({ profile, exercise, index, previous, expanded, toggle, addSet, videoLinks }: { profile: Profile; exercise: Exercise; index: number; previous?: SetLog; expanded: boolean; toggle: () => void; addSet: (e: string, w: number, r: number) => void; videoLinks: VideoLink[] }) {
-  const [weight, setWeight] = useState(previous?.weight || 0)
-  const [reps, setReps] = useState(previous?.reps || Number(exercise.reps.split('-')[0]))
+function ExerciseCard({ profile, exercise, index, previous, expanded, toggle, addSet, videoLinks }: { profile: Profile; exercise: Exercise; index: number; previous?: SetLog; expanded: boolean; toggle: () => void; addSet: (e: string, w: number, r: number) => Promise<{ ok: boolean; message: string }>; videoLinks: VideoLink[] }) {
+  const [weight, setWeight] = useState(previous ? String(previous.weight) : '')
+  const [reps, setReps] = useState(previous ? String(previous.reps) : exercise.reps.split('-')[0])
+  const [logMessage, setLogMessage] = useState('')
   const [sub, setSub] = useState(exercise.name)
   const [detailView, setDetailView] = useState<'target' | 'instructions' | 'warmup'>('target')
   const steps = exerciseSteps(sub)
   const target = targetMuscles(sub)
   const video = videoFor(sub, videoLinks)
   const thumbnail = youtubeThumbnail(video.url)
-  const warmup = warmupFor(sub, weight, profile, index)
+  const warmup = warmupFor(sub, Number(weight) || 0, profile, index)
   return <article className={`exercise-card ${expanded ? 'expanded' : ''}`}>
     <button className="exercise-summary" onClick={toggle}>
       <span className="exercise-index">{String(index + 1).padStart(2, '0')}</span><div><h3>{sub}</h3><p>{exercise.sets} sets · {exercise.reps} reps · {exercise.rest} rest</p><small className="sub-hint">{expanded ? 'Choose below' : '2 substitutes · muscles · steps · breathing'}</small></div>
@@ -469,9 +472,19 @@ function ExerciseCard({ profile, exercise, index, previous, expanded, toggle, ad
       {detailView === 'target' && <MuscleMap target={target}/>}
       {detailView === 'instructions' && <div className="how-to">{thumbnail && <a className="demo-image" href={video.url} target="_blank" rel="noreferrer"><img src={thumbnail} alt={`${sub} video demonstration`} loading="lazy"/><span>Watch visual demonstration <ExternalLink/></span></a>}<div className="how-to-heading"><b>How to do {sub}</b><a href={video.url} target="_blank" rel="noreferrer">{video.label}<ExternalLink/></a></div><ol>{steps.map((step) => <li key={step}>{step}</li>)}</ol><div className="breathing"><Wind/><p><b>Breathing:</b> {breathingFor(sub)}</p></div></div>}
       {detailView === 'warmup' && <div className="how-to"><b>{warmup.title}</b><ol>{warmup.steps.map((step) => <li key={step}>{step}</li>)}</ol><p className="warmup-note">{warmup.note}</p></div>}
-      <div className="set-entry no-rir"><label>Weight <span><input type="number" min="0" step="0.5" value={weight} onChange={(e) => setWeight(Number(e.target.value))} /> kg</span></label><label>Reps <input type="number" min="1" value={reps} onChange={(e) => setReps(Number(e.target.value))} /></label><button className="primary" onClick={() => addSet(sub, weight, reps)}><Plus /> Log set</button></div>
-    </div>}
-  </article>
+       <SetEntry weight={weight} reps={reps} setWeight={setWeight} setReps={setReps} logMessage={logMessage} logSet={async () => {
+         const parsedWeight = Number(weight)
+         const parsedReps = Number(reps)
+         if (!weight.trim() || !Number.isFinite(parsedWeight) || parsedWeight < 0) { setLogMessage('Enter a weight of 0 or more.'); return }
+         if (!reps.trim() || !Number.isInteger(parsedReps) || parsedReps < 1) { setLogMessage('Enter at least 1 rep.'); return }
+         setLogMessage((await addSet(sub, parsedWeight, parsedReps)).message)
+       }} />
+     </div>}
+   </article>
+ }
+
+function SetEntry({ weight, reps, setWeight, setReps, logMessage, logSet }: { weight: string; reps: string; setWeight: (value: string) => void; setReps: (value: string) => void; logMessage: string; logSet: () => void }) {
+  return <div className="set-entry no-rir"><label>Weight <span><input type="number" min="0" step="1" inputMode="numeric" placeholder="0" value={weight} onChange={(e) => setWeight(e.target.value)} /> kg</span></label><label>Reps <input type="number" min="1" step="1" inputMode="numeric" value={reps} onChange={(e) => setReps(e.target.value)} /></label><button className="primary" onClick={logSet}><Plus /> Log set</button>{logMessage && <small className="set-log-message">{logMessage}</small>}</div>
 }
 
 function Plan({ profile, sessions, schedule, setSchedule }: { profile: Profile; sessions: SessionMap; schedule: Record<string, Day>; setSchedule: React.Dispatch<React.SetStateAction<Record<string, Day>>> }) {
