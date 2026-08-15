@@ -18,6 +18,7 @@ type Profile = 'ashay' | 'girlfriend'
 type SetLog = { exercise: string; weight: number; reps: number; date: string }
 type Measurement = { date: string; weight: number; waist: number; chest: number; arm: number; thigh: number; hip: number; neck: number }
 type Exercise = { name: string; sets: number; reps: string; rest: string; why: string; subs: [string, string] }
+type VideoLink = { exercise_name: string; youtube_url: string; video_label: string }
 
 const supabase = createClient(
   'https://wzqayqiorgnjgkjxuobp.supabase.co',
@@ -165,11 +166,19 @@ function App() {
   const [email, setEmail] = useState('')
   const [authMessage, setAuthMessage] = useState('')
   const [showProfile, setShowProfile] = useState(false)
+  const [videoLinks, setVideoLinks] = useState<VideoLink[]>([])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
     const { data } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
     return () => data.subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}exercise-video-links.json`)
+      .then((response) => response.ok ? response.json() as Promise<VideoLink[]> : [])
+      .then(setVideoLinks)
+      .catch(() => setVideoLinks([]))
   }, [])
 
   useEffect(() => { localStorage.setItem(`ash-schedule-${profile}`, JSON.stringify(schedule)) }, [schedule, profile])
@@ -239,7 +248,7 @@ function App() {
         <header className="mobile-header"><button className="brand"><span>AS</span><b>ASHAY STRENGTH</b></button><button onClick={() => setShowProfile(!showProfile)}><CircleUserRound /></button></header>
         <div className="person-switch" role="group" aria-label="Choose training profile"><Users/><button className={profile === 'ashay' ? 'active' : ''} onClick={() => switchProfile('ashay')}>Ashay</button><button className={profile === 'girlfriend' ? 'active' : ''} onClick={() => switchProfile('girlfriend')}>Kalyani</button></div>
         {profile === 'girlfriend' && <div className="profile-setup-note"><Sparkles/><p><b>Train-together mode.</b> Kalyani has the same primary exercises, order and training days as Ashay. Only her beginner sets, rep targets and back-friendly substitutes differ.</p></div>}
-        {tab === 'today' && <Today profile={profile} sessions={sessions} sessionKey={activeSession} setSessionKey={setActiveSession} logs={logs} addSet={addSet} openExercise={openExercise} setOpenExercise={setOpenExercise} />}
+        {tab === 'today' && <Today profile={profile} sessions={sessions} sessionKey={activeSession} setSessionKey={setActiveSession} logs={logs} addSet={addSet} openExercise={openExercise} setOpenExercise={setOpenExercise} videoLinks={videoLinks} />}
         {tab === 'plan' && <Plan profile={profile} sessions={sessions} schedule={schedule} setSchedule={setSchedule} />}
         {tab === 'nutrition' && <Nutrition profile={profile} measurements={measurements} />}
         {tab === 'progress' && <Progress profile={profile} totalVolume={totalVolume} logs={logs} strengthData={strengthData} bodyData={bodyData} measurements={measurements} setMeasurements={setMeasurements} user={user} />}
@@ -255,7 +264,7 @@ function App() {
   )
 }
 
-function Today({ profile, sessions, sessionKey, setSessionKey, logs, addSet, openExercise, setOpenExercise }: { profile: Profile; sessions: SessionMap; sessionKey: string; setSessionKey: (s: string) => void; logs: SetLog[]; addSet: (e: string, w: number, r: number) => void; openExercise: string | null; setOpenExercise: (s: string | null) => void }) {
+function Today({ profile, sessions, sessionKey, setSessionKey, logs, addSet, openExercise, setOpenExercise, videoLinks }: { profile: Profile; sessions: SessionMap; sessionKey: string; setSessionKey: (s: string) => void; logs: SetLog[]; addSet: (e: string, w: number, r: number) => void; openExercise: string | null; setOpenExercise: (s: string | null) => void; videoLinks: VideoLink[] }) {
   const session = sessions[sessionKey]
   return <div className="page">
     <div className="eyebrow">WEEK 1 · {profile === 'ashay' ? 'BUILD PHASE' : 'FOUNDATION PHASE'}</div>
@@ -269,7 +278,7 @@ function Today({ profile, sessions, sessionKey, setSessionKey, logs, addSet, ope
     <div className="exercise-list">
       {session.exercises.map((exercise, index) => {
         const previous = [...logs].reverse().find((l) => l.exercise === exercise.name)
-        return <ExerciseCard key={exercise.name} profile={profile} exercise={exercise} index={index} previous={previous} expanded={openExercise === exercise.name} toggle={() => setOpenExercise(openExercise === exercise.name ? null : exercise.name)} addSet={addSet} />
+        return <ExerciseCard key={exercise.name} profile={profile} exercise={exercise} index={index} previous={previous} expanded={openExercise === exercise.name} toggle={() => setOpenExercise(openExercise === exercise.name ? null : exercise.name)} addSet={addSet} videoLinks={videoLinks} />
       })}
     </div>
     <div className="coach-note"><Sparkles /><div><b>Progression rule</b><p>{profile === 'ashay' ? 'Use a weight that makes the final reps challenging while your technique stays clean. When every set reaches the top of the rep range, add the smallest available load next time. Never force a rep after form breaks.' : 'For the first two weeks, finish every set while she could still perform a few clean reps. When all sets feel controlled at the top of the rep range, add the smallest load. Stop for sharp, radiating or worsening back pain.'}</p></div></div>
@@ -389,32 +398,9 @@ function warmupFor(name: string, workingWeight: number, profile: Profile, index:
   return { title: 'Ashay: optional isolation rehearsal', steps: [`Use ${load(.5, 'about half the working weight')} × 8-10 controlled reps.`, 'Confirm the machine adjustment and full comfortable range.', 'Begin working sets once you feel the target muscle, not fatigue.'], note: 'This rehearsal can be skipped when the muscle is already warm and the setup is familiar.' }
 }
 
-function videoFor(name: string): { url: string; label: string } {
-  const n = name.toLowerCase()
-  const exact: [string, string, string][] = [
-    ['barbell back squat', 'https://www.youtube.com/watch?v=bEv6CCg2BC8', 'Jeff squat technique'],
-    ['machine squat', 'https://youtu.be/N56STpGGRYE', 'Jeff PDF demo'],
-    ['romanian deadlift', 'https://youtu.be/_oyxCn2iSjU?t=95', 'Jeff PDF technique'],
-    ['leg extension', 'https://youtu.be/ljO4jkwv8wQ?t=202', 'Jeff PDF technique'],
-    ['seated leg curl', 'https://youtu.be/2CMmuH4qJh0', 'Jeff PDF demo'],
-    ['lying leg curl', 'https://www.youtube.com/watch?v=e_48W0vlU58', 'Jeff PDF demo'],
-    ['calf', 'https://youtu.be/-qsRtp_PbVM?t=311', 'Jeff PDF technique'],
-    ['machine shoulder press', 'https://www.youtube.com/watch?v=flr4ohSl0j8', 'Jeff PDF demo'],
-    ['lat pulldown', 'https://youtu.be/QGKhvhMcpPQ', 'Jeff PDF demo'],
-    ['pull-up', 'https://youtu.be/Hdc7Mw6BIEE?t=99', 'Jeff PDF technique'],
-    ['machine row', 'https://youtu.be/160n9FBX84s', 'Jeff PDF row demo'],
-    ['chest-supported', 'https://youtu.be/160n9FBX84s', 'Jeff PDF demo'],
-    ['lateral raise', 'https://youtu.be/-9QsrJ542ao', 'Jeff PDF demo'],
-    ['overhead cable triceps', 'https://youtu.be/qIW3z-ydg-M', 'Jeff PDF demo'],
-    ['triceps pressdown', 'https://youtu.be/popGXI-qs98?t=123', 'Jeff PDF technique'],
-    ['incline db press', 'https://youtu.be/URQ1Wn7lY3A', 'Jeff PDF press demo'],
-    ['cable chest press', 'https://youtu.be/fV6G1aQb9mM', 'Jeff PDF demo'],
-    ['curl', 'https://youtu.be/i1YgFZB6alI?t=487', 'Jeff PDF technique'],
-    ['crunch', 'https://youtu.be/zU6X6DLCH_U', 'Jeff PDF demo'],
-    ['hack squat', 'https://youtu.be/wEgQUCdtFLg', 'Jeff PDF demo'],
-  ]
-  const match = exact.find(([term]) => n.includes(term))
-  return match ? { url: match[1], label: match[2] } : { url: `https://www.youtube.com/results?search_query=${encodeURIComponent(`Jeff Nippard ${name} technique`)}`, label: 'Find a Jeff demo' }
+function videoFor(name: string, links: VideoLink[]): { url: string; label: string } {
+  const match = links.find((link) => link.exercise_name.trim().toLowerCase() === name.trim().toLowerCase() && link.youtube_url.trim())
+  return match ? { url: match.youtube_url.trim(), label: match.video_label.trim() || 'Watch demonstration' } : { url: `https://www.youtube.com/results?search_query=${encodeURIComponent(`Jeff Nippard ${name} technique`)}`, label: 'Find a Jeff demo' }
 }
 
 function youtubeThumbnail(url: string) {
@@ -461,14 +447,14 @@ function MuscleMap({ target }: { target: { primary: Muscle[]; secondary: Muscle[
   </svg><div className="muscle-legend"><span><i className="legend-primary"/><b>Primary</b>{target.primary.join(', ') || 'General movement'}</span><span><i className="legend-secondary"/><b>Supporting</b>{target.secondary.join(', ') || 'None highlighted'}</span><small>Highlights show the main muscles trained, not every stabilizer active during the exercise.</small></div></div>
 }
 
-function ExerciseCard({ profile, exercise, index, previous, expanded, toggle, addSet }: { profile: Profile; exercise: Exercise; index: number; previous?: SetLog; expanded: boolean; toggle: () => void; addSet: (e: string, w: number, r: number) => void }) {
+function ExerciseCard({ profile, exercise, index, previous, expanded, toggle, addSet, videoLinks }: { profile: Profile; exercise: Exercise; index: number; previous?: SetLog; expanded: boolean; toggle: () => void; addSet: (e: string, w: number, r: number) => void; videoLinks: VideoLink[] }) {
   const [weight, setWeight] = useState(previous?.weight || 0)
   const [reps, setReps] = useState(previous?.reps || Number(exercise.reps.split('-')[0]))
   const [sub, setSub] = useState(exercise.name)
   const [detailView, setDetailView] = useState<'target' | 'instructions' | 'warmup'>('target')
   const steps = exerciseSteps(sub)
   const target = targetMuscles(sub)
-  const video = videoFor(sub)
+  const video = videoFor(sub, videoLinks)
   const thumbnail = youtubeThumbnail(video.url)
   const warmup = warmupFor(sub, weight, profile, index)
   return <article className={`exercise-card ${expanded ? 'expanded' : ''}`}>
@@ -478,7 +464,7 @@ function ExerciseCard({ profile, exercise, index, previous, expanded, toggle, ad
     </button>
     {expanded && <div className="exercise-detail">
       <div className="why"><b>Why it earns its place</b><p>{exercise.why}</p></div>
-      <label>Exercise or substitute<select value={sub} onChange={(e) => setSub(e.target.value)}><option>{exercise.name}</option>{exercise.subs.map((s) => <option key={s}>{s}</option>)}</select></label>
+      <label>Exercise or substitute<select value={sub} onChange={(e) => setSub(e.target.value)}><option value={exercise.name}>{exercise.name} · S-tier primary</option>{exercise.subs.map((s, substitutionIndex) => <option key={s} value={s}>{s} · {substitutionIndex === 0 ? 'higher-tier substitute' : 'lower-tier substitute'}</option>)}</select></label>
       <div className="detail-tabs"><button className={detailView === 'target' ? 'active' : ''} onClick={() => setDetailView('target')}>Target</button><button className={detailView === 'instructions' ? 'active' : ''} onClick={() => setDetailView('instructions')}>Instructions</button><button className={detailView === 'warmup' ? 'active' : ''} onClick={() => setDetailView('warmup')}>Warm-up</button></div>
       {detailView === 'target' && <MuscleMap target={target}/>}
       {detailView === 'instructions' && <div className="how-to">{thumbnail && <a className="demo-image" href={video.url} target="_blank" rel="noreferrer"><img src={thumbnail} alt={`${sub} video demonstration`} loading="lazy"/><span>Watch visual demonstration <ExternalLink/></span></a>}<div className="how-to-heading"><b>How to do {sub}</b><a href={video.url} target="_blank" rel="noreferrer">{video.label}<ExternalLink/></a></div><ol>{steps.map((step) => <li key={step}>{step}</li>)}</ol><div className="breathing"><Wind/><p><b>Breathing:</b> {breathingFor(sub)}</p></div></div>}

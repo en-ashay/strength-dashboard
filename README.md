@@ -9,6 +9,10 @@ npm install
 npm run dev
 ```
 
+## Exercise video links
+
+The editable catalog is available in `public/exercise-video-links.xlsx` and `public/exercise-video-links.csv`. The dashboard reads `public/exercise-video-links.json` when it loads and uses the matching YouTube link on each exercise's Instructions tab. Fill in `youtube_url` and, optionally, `video_label` in Excel; after the completed file is returned to the project, sync those rows into the JSON catalog before deploying.
+
 ## Supabase setup
 
 Run `supabase/schema.sql` in the Supabase SQL Editor. The app uses magic-link authentication and Row Level Security so each account can only access its own records.
